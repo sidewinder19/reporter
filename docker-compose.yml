@@ -1,0 +1,30 @@
+version: "3"
+services:
+    api:
+        build:
+            context: .
+            dockerfile: ./docker/api/Dockerfile
+        command: python3 manage.py runserver 0.0.0.0:8000
+        volumes:
+            - .:/code
+        ports:
+            - '8080:8000'
+        networks:
+            - backend
+    db:
+        image: mysql:5.7
+        command: --disable-partition-engine-check
+        ports:
+            - '3307:3306'
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: masterpw
+            MYSQL_DATABASE: employees
+            MYSQL_USER: reportinator
+            MYSQL_PASSWORD: userpw
+        volumes:
+            - /var/db_data:/var/lib/mysql
+        networks:
+            - backend
+networks:
+    backend:
