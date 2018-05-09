@@ -1,4 +1,4 @@
-"""lw_api URL Configuration
+"""Reporter URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.11/topics/http/urls/
@@ -18,6 +18,6 @@ from django.contrib import admin
 from django.urls import include
 
 urlpatterns = [
-    url('reporting/', include('reporting.urls')),
+    url('web/', include('web.urls')),
     url(r'^admin/', admin.site.urls),
 ]
