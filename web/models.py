@@ -2,31 +2,126 @@
 from sqlalchemy import Column, Date, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.mysql.enumerated import ENUM
+from sqlalchemy.exc import UnboundExecutionError 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy_utils import (
+    database_exists, 
+    create_database as sql_create_database, 
+    drop_database
+)
 
-
-DB = {
-    'drivername': 'mysql',
-    'host': '172.18.0.2',
-    'port': '3306',
-    'username': 'reportinator', #  os.environ['DBUNAME'],
-    'password': 'userpw', #  os.environ['DBPASS'],
-    'database': 'employees', #  os.environ['DBNAME']
-}
-
-
-ENGINE = create_engine(URL(**DB))
-SESSION = sessionmaker(bind=ENGINE)
+ENGINE = None
+SESSION_FACTORY = None
 
 Base = declarative_base()
 metadata = Base.metadata
 
 
-def get_session():
-    return SESSION()
+def get_configs(test_mode=False):
+   conf = {
+       'drivername': 'mysql',
+       'host': '172.18.0.2',
+       'port': '3306',
+       'username': 'reportinator', #  os.environ['DBUNAME'],
+       'password': 'userpw', #  os.environ['DBPASS'],
+       'database': 'employees', #  os.environ['DBNAME']
+   }
+   if test_mode:
+       conf['database'] = 'test_' + conf['database']
+   return conf
+
+
+def get_engine(test_mode=False):
+    global ENGINE
+    if ENGINE:
+        return ENGINE
+
+    conf = get_configs(test_mode=test_mode)
+    ENGINE = create_engine(URL(**conf))
+    return ENGINE
+
+
+def create_tables(test_mode=False):
+    engine = get_engine(test_mode=test_mode)    
+    metadata.create_all(bind=engine)
+
+
+def create_database_fail(test_mode=False):
+    engine = get_engine(test_mode=test_mode)
+    #conn = engine.connect()
+    conf = get_configs(test_mode=test_mode)
+    database = conf['database']
+    # conn.execute('CREATE DATABASE IF NOT EXISTS {}'.format(database))
+
+    metadata.create_all(bind=engine)
+
+    # return conn
+
+
+def create_database(test_mode=False):
+    engine = get_engine(test_mode=test_mode)
+   
+    #conf = get_configs(test_mode=test_mode)
+    #database = conf['database'] 
+    #engine.execute('CREATE DATABASE IF NOT EXISTS {}'.format(database))
+    #engine.execute('USE {}'.format(database))
+    metadata.create_all(bind=engine)
+
+    #if not database_exists(engine.url):
+    #    sql_create_database(engine.url)
+    #    metadata.create_all(bind=engine)
+
+
+def get_session_factory(test_mode=False):
+    global SESSION_FACTORY
+    if SESSION_FACTORY:
+        return SESSION_FACTORY
+
+    engine = get_engine(test_mode=test_mode)    
+
+    SESSION_FACTORY = scoped_session(sessionmaker(bind=engine))
+
+    return SESSION_FACTORY
+
+
+def get_session(test_mode=False):
+    return get_session_factory(test_mode=test_mode)()
+
+
+def remove_database_fail(test_mode=False):
+    conf = get_configs(test_mode=test_mode)
+    database = conf['database']
+    # connection.execute('DROP DATABASE IF EXISTS {}'.format(database))
+
+
+def drop_tables(test_mode=False):
+    engine = get_engine(test_mode=test_mode)
+    try:
+        metadata.drop_all(engine)
+    except UnboundExecutionError:
+        pass  # Database doesn't exist yet, so noting to remove.
+
+
+def remove_database(test_mode=False):
+    try:
+        metadata.drop_all()
+    except UnboundExecutionError:
+        pass  # Database doesn't exist yet, so noting to remove.
+
+    engine = get_engine(test_mode=test_mode)
+    conf = get_configs(test_mode=test_mode)
+    database = conf['database']
+    engine.execute('USE {}'.format(database))
+    engine.execute('DROP DATABASE IF EXISTS {}'.format(database))
+
+    global ENGINE, SESSION_FACTORY
+    if ENGINE:
+        ENGINE.dispose()
+    ENGINE = None
+    SESSION_FACTORY = None
 
 
 t_current_dept_emp = Table(

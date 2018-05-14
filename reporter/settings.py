@@ -75,15 +75,7 @@ WSGI_APPLICATION = 'reporter.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'employees',
-        'USER': 'reportinator',
-        'PASSWORD': 'userpw',
-        # For use in docker compose: 'HOST': 'db',
-        'HOST': '172.18.0.2',
-        'PORT': '3306',
-    }
+# Let SQLAlchemy control database configuration now.
 }
 
 
