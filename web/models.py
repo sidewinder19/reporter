@@ -151,6 +151,11 @@ class DeptEmp(Base):
     department = relationship('Department')
     employee = relationship('Employee')
 
+    def __repr__(self):
+        return (
+            'DeptEmp(emp_no={}, dept_no={}, from={}, to={})'.format(
+            self.emp_no, self.dept_no, self.from_date, self.to_date))
+
 
 t_dept_emp_latest_date = Table(
     'dept_emp_latest_date', metadata,
@@ -192,6 +197,11 @@ class Salary(Base):
     to_date = Column(Date, nullable=False)
 
     employee = relationship('Employee')
+
+    def __repr__(self):
+        return (
+            'Salary(emp_no={}, salary={}, from={}, to={})'.format(
+            self.emp_no, self.salary, self.from_date, self.to_date))
 
 
 class Title(Base):

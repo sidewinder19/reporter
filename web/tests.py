@@ -14,6 +14,7 @@ from .models import (
 DATE_EARLIEST = date(1995, 2, 1)
 DATE_BEGIN_ASSOCS = date(1996, 4, 2)
 DATE_MIDDLE = date(1997, 6, 22)
+DATE_MIDDLE_PLUS = date(1998, 5, 6)
 DATE_LAST_ASSOCS = date(1999, 10, 31)
 DATE_LATEST = date(2000, 3, 6)
 DATE_FOREVER = date(9999, 1, 1)
@@ -67,6 +68,7 @@ class DatabaseTests(TestCase):
             from_date=DATE_BEGIN_ASSOCS,
             to_date=DATE_FOREVER,
         )
+        self.s1_repr = str(self.s1)
         self.session.add(self.s1)
         self.s2 = Salary(
             emp_no='2',
@@ -74,13 +76,15 @@ class DatabaseTests(TestCase):
             from_date=DATE_BEGIN_ASSOCS,
             to_date=DATE_MIDDLE,
         )
+        self.s2_repr = str(self.s2)
         self.session.add(self.s2)
         self.s3 = Salary(
             emp_no='2',
             salary='70000',
-            from_date=DATE_MIDDLE,
+            from_date=DATE_MIDDLE_PLUS,
             to_date=DATE_FOREVER,
         )
+        self.s3_repr = str(self.s3)
         self.session.add(self.s3)
 
         # Department to Employee mappings
@@ -90,6 +94,7 @@ class DatabaseTests(TestCase):
             from_date=DATE_BEGIN_ASSOCS,
             to_date=DATE_FOREVER,
         )
+        self.de1_repr = str(self.de1)
         self.session.add(self.de1)
         self.de2 = DeptEmp(
             emp_no='2',
@@ -97,6 +102,7 @@ class DatabaseTests(TestCase):
             from_date=DATE_BEGIN_ASSOCS,
             to_date=DATE_MIDDLE,
         )
+        self.de2_repr = str(self.de2)
         self.session.add(self.de2)
         self.de3 = DeptEmp(
             emp_no='2',
@@ -104,7 +110,8 @@ class DatabaseTests(TestCase):
             from_date=DATE_MIDDLE,
             to_date=DATE_FOREVER,
         )
-        self.session.add(self.de3)
+        self.de3_repr = str(self.de3)
+        self.session.add(self.de3)   
 
         self.session.commit() 
 
@@ -118,7 +125,7 @@ class DeptEmpTests(DatabaseTests):
         res = self.session.query(Employee).all()
         self.assertEquals(2, len(res))
 
-    def test_query_dept_emp_all(self):
+    def test_query_all(self):
         date_start = DATE_EARLIEST
         date_end = DATE_FOREVER
 
@@ -128,7 +135,14 @@ class DeptEmpTests(DatabaseTests):
             DeptEmp.from_date < date_end).all()
         self.assertEquals(3, len(res))
 
-    def test_query_dept_emp_partial(self):
+        expected = [self.de1_repr, self.de2_repr, self.de3_repr] 
+        res_repr = [str(r) for r in res]
+        diff = set(expected) - set(res_repr)
+        self.assertEquals(0, len(diff))
+        diff = set(res_repr) - set(expected)
+        self.assertEquals(0, len(diff))
+
+    def test_query_partial(self):
         date_start = DATE_EARLIEST
         date_end = DATE_MIDDLE
 
@@ -137,4 +151,52 @@ class DeptEmpTests(DatabaseTests):
         ).filter(
             DeptEmp.from_date < date_end).all()
         self.assertEquals(2, len(res))
+
+        expected = [self.de1_repr, self.de2_repr]
+        res_repr = [str(r) for r in res]
+        diff = set(expected) - set(res_repr)
+        self.assertEquals(0, len(diff))
+        diff = set(res_repr) - set(expected)
+        self.assertEquals(0, len(diff))
+
+
+class SalaryTests(DatabaseTests):
+
+    def test_count_records(self):
+        res = self.session.query(Salary).all()
+        self.assertEquals(3, len(res))
+
+    def test_query_all(self):
+        date_start = DATE_EARLIEST
+        date_end = DATE_FOREVER
+
+        res = self.session.query(Salary).filter(
+            Salary.to_date > date_start
+        ).filter(
+            Salary.from_date < date_end).all()
+        self.assertEquals(3, len(res))
+
+        expected = [self.s1_repr, self.s2_repr, self.s3_repr]
+        res_repr = [str(r) for r in res]
+        diff = set(expected) - set(res_repr)
+        self.assertEquals(0, len(diff))
+        diff = set(res_repr) - set(expected)
+        self.assertEquals(0, len(diff))
+
+    def test_query_partial(self):
+        date_start = DATE_EARLIEST
+        date_end = DATE_MIDDLE
+
+        res = self.session.query(Salary).filter(
+            Salary.to_date > date_start
+        ).filter(
+            Salary.from_date < date_end).all()
+        self.assertEquals(2, len(res))
+
+        expected = [self.s1_repr, self.s2_repr]
+        res_repr = [str(r) for r in res]
+        diff = set(expected) - set(res_repr)
+        self.assertEquals(0, len(diff))
+        diff = set(res_repr) - set(expected)
+        self.assertEquals(0, len(diff))
 
