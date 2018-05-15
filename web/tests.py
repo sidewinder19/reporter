@@ -8,7 +8,10 @@ from .models import (
     remove_database, 
     create_database,
     drop_tables, create_tables, 
+    fetch_employee_salaries, fetch_dept_employees,
     Department, Employee, Salary, DeptEmp)
+
+from .reports import DepartmentSalariesReport
 
 
 DATE_EARLIEST = date(1995, 2, 1)
@@ -74,7 +77,7 @@ class DatabaseTests(TestCase):
             emp_no='2',
             salary='60000',
             from_date=DATE_BEGIN_ASSOCS,
-            to_date=DATE_MIDDLE,
+            to_date=DATE_MIDDLE_PLUS,
         )
         self.s2_repr = str(self.s2)
         self.session.add(self.s2)
@@ -129,10 +132,11 @@ class DeptEmpTests(DatabaseTests):
         date_start = DATE_EARLIEST
         date_end = DATE_FOREVER
 
-        res = self.session.query(DeptEmp).filter(
-            DeptEmp.to_date > date_start
-        ).filter(
-            DeptEmp.from_date < date_end).all()
+        res = fetch_dept_employees(
+            self.session,
+            date_start,
+            date_end,
+        )
         self.assertEquals(3, len(res))
 
         expected = [self.de1_repr, self.de2_repr, self.de3_repr] 
@@ -146,10 +150,12 @@ class DeptEmpTests(DatabaseTests):
         date_start = DATE_EARLIEST
         date_end = DATE_MIDDLE
 
-        res = self.session.query(DeptEmp).filter(
-            DeptEmp.to_date > date_start
-        ).filter(
-            DeptEmp.from_date < date_end).all()
+
+        res = fetch_dept_employees(
+            self.session,
+            date_start,
+            date_end,
+        )
         self.assertEquals(2, len(res))
 
         expected = [self.de1_repr, self.de2_repr]
@@ -170,10 +176,11 @@ class SalaryTests(DatabaseTests):
         date_start = DATE_EARLIEST
         date_end = DATE_FOREVER
 
-        res = self.session.query(Salary).filter(
-            Salary.to_date > date_start
-        ).filter(
-            Salary.from_date < date_end).all()
+        res = fetch_employee_salaries(
+            self.session,
+            date_start,
+            date_end,
+        )
         self.assertEquals(3, len(res))
 
         expected = [self.s1_repr, self.s2_repr, self.s3_repr]
@@ -187,10 +194,11 @@ class SalaryTests(DatabaseTests):
         date_start = DATE_EARLIEST
         date_end = DATE_MIDDLE
 
-        res = self.session.query(Salary).filter(
-            Salary.to_date > date_start
-        ).filter(
-            Salary.from_date < date_end).all()
+        res = fetch_employee_salaries(
+            self.session,
+            date_start,
+            date_end,
+        )
         self.assertEquals(2, len(res))
 
         expected = [self.s1_repr, self.s2_repr]
@@ -199,4 +207,34 @@ class SalaryTests(DatabaseTests):
         self.assertEquals(0, len(diff))
         diff = set(res_repr) - set(expected)
         self.assertEquals(0, len(diff))
+
+
+class DepartmentSalariesReportTests(DatabaseTests):
+
+    def test_compute_salary(self):
+        days_total = (DATE_LAST_ASSOCS - DATE_BEGIN_ASSOCS).days
+        salary_e1 = 50000.0 * days_total / 365
+
+        days_e2_first = (DATE_MIDDLE_PLUS - DATE_BEGIN_ASSOCS).days 
+        salary_e2_first = 60000.0 * days_e2_first / 365
+
+        days_e2_second = (DATE_LAST_ASSOCS - DATE_MIDDLE_PLUS).days
+        salary_e2_second = 70000.0 * days_e2_second / 365
+ 
+        salary_total = int(salary_e1 + salary_e2_first + salary_e2_second)
+
+        report = DepartmentSalariesReport(None, None, None)
+
+        salaries = fetch_employee_salaries(
+            self.session,
+            DATE_EARLIEST,
+            DATE_FOREVER,
+        )
+
+        test_total = report.compute_salary(
+            DATE_EARLIEST,
+            DATE_LAST_ASSOCS,
+            salaries,
+        )
+        self.assertEquals(salary_total, test_total)
 
