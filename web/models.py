@@ -124,6 +124,24 @@ def remove_database(test_mode=False):
     SESSION_FACTORY = None
 
 
+def fetch_employee_salaries(session, from_incl, to_excl):
+    salaries = session.query(Salary).filter(
+        Salary.to_date > from_incl
+    ).filter(
+        Salary.from_date < to_excl
+    ).all()
+    return salaries
+
+
+def fetch_dept_employees(session, from_incl, to_excl):
+    dept_emps = session.query(DeptEmp).filter(
+        DeptEmp.to_date > from_incl
+    ).filter(
+        DeptEmp.from_date < to_excl
+    ).all()
+    return dept_emps
+
+
 t_current_dept_emp = Table(
     'current_dept_emp', metadata,
     Column('emp_no', Integer),
