@@ -23,7 +23,7 @@ class DepartmentSalariesReport():
         for dept, dept_emps in map_dept_to_dept_emps.items():
             for de in dept_emps:
                 emp_salaries = map_emp_to_salaries.get(de.emp_no, [])
-                emp_salary_total = compute_salary(
+                emp_salary_total = self.compute_salary(
                     de.from_date, de.to_date, emp_salaries)
                 dept_totals[de.dept_no] = (
                     dept_totals.get(de.dept_no, 0) + emp_salary_total
@@ -56,19 +56,33 @@ class DepartmentSalariesReport():
                 map_d2de[dept_emp.dept_no] = [dept_emp]
         return map_d2de
 
-    @staticmethod
-    def compute_salary(from_incl, to_excl, emp_salaries):
+    def compute_salary(self, from_incl_sub, to_excl_sub, emp_salaries):
         salary_total = 0.0
-        days_max = (to_excl - from_incl).days
+
+        # Restrict range to this instance's configured range.
+        from_in = from_incl_sub
+        if from_incl_sub < self.from_incl:
+            from_in = self.from_incl 
+        elif from_incl_sub >= self.to_excl:
+            return salary_total
+
+        to_ex = to_excl_sub
+        if to_excl_sub > self.to_excl:
+            to_ex = self.to_excl
+        elif to_excl_sub <= self.from_incl:
+            return salary_total 
+
+        # Compute total salaries.
+        days_max = (to_ex - from_in).days
         for salary in emp_salaries:
 
             # If salary is at lower end of overall range.
-            if salary.from_date <= from_incl:
-                days = (salary.to_date - from_incl).days
+            if salary.from_date <= from_in:
+                days = (salary.to_date - from_in).days
 
             # If salary is at upper end of overall range.
-            elif salary.to_date >= to_excl:
-                days = (to_excl - salary.from_date).days
+            elif salary.to_date >= to_ex:
+                days = (to_ex - salary.from_date).days
 
             # Else, salary range is nested in overall range.
             else:
@@ -80,5 +94,5 @@ class DepartmentSalariesReport():
             salary_next = float(salary.salary) * days / 365
             salary_total += salary_next
 
-        return int(salary_total)
+        return salary_total
 

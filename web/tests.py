@@ -118,6 +118,12 @@ class DatabaseTests(TestCase):
 
         self.session.commit() 
 
+    def _assert_results_equal(self, expected, res_repr):
+        diff = set(expected) - set(res_repr)
+        self.assertEquals(0, len(diff))
+        diff = set(res_repr) - set(expected)
+        self.assertEquals(0, len(diff))
+
 
 class DeptEmpTests(DatabaseTests):
 
@@ -141,10 +147,7 @@ class DeptEmpTests(DatabaseTests):
 
         expected = [self.de1_repr, self.de2_repr, self.de3_repr] 
         res_repr = [str(r) for r in res]
-        diff = set(expected) - set(res_repr)
-        self.assertEquals(0, len(diff))
-        diff = set(res_repr) - set(expected)
-        self.assertEquals(0, len(diff))
+        self._assert_results_equal(expected, res_repr)
 
     def test_query_partial(self):
         date_start = DATE_EARLIEST
@@ -160,10 +163,7 @@ class DeptEmpTests(DatabaseTests):
 
         expected = [self.de1_repr, self.de2_repr]
         res_repr = [str(r) for r in res]
-        diff = set(expected) - set(res_repr)
-        self.assertEquals(0, len(diff))
-        diff = set(res_repr) - set(expected)
-        self.assertEquals(0, len(diff))
+        self._assert_results_equal(expected, res_repr)
 
 
 class SalaryTests(DatabaseTests):
@@ -185,10 +185,7 @@ class SalaryTests(DatabaseTests):
 
         expected = [self.s1_repr, self.s2_repr, self.s3_repr]
         res_repr = [str(r) for r in res]
-        diff = set(expected) - set(res_repr)
-        self.assertEquals(0, len(diff))
-        diff = set(res_repr) - set(expected)
-        self.assertEquals(0, len(diff))
+        self._assert_results_equal(expected, res_repr)
 
     def test_query_partial(self):
         date_start = DATE_EARLIEST
@@ -203,38 +200,80 @@ class SalaryTests(DatabaseTests):
 
         expected = [self.s1_repr, self.s2_repr]
         res_repr = [str(r) for r in res]
-        diff = set(expected) - set(res_repr)
-        self.assertEquals(0, len(diff))
-        diff = set(res_repr) - set(expected)
-        self.assertEquals(0, len(diff))
+        self._assert_results_equal(expected, res_repr)
 
 
 class DepartmentSalariesReportTests(DatabaseTests):
 
-    def test_compute_salary(self):
-        days_total = (DATE_LAST_ASSOCS - DATE_BEGIN_ASSOCS).days
-        salary_e1 = 50000.0 * days_total / 365
+    def setUp(self):
+        super().setUp()
+        self.report = DepartmentSalariesReport(
+            self.session, 
+            DATE_BEGIN_ASSOCS, 
+            DATE_LAST_ASSOCS)
 
-        days_e2_first = (DATE_MIDDLE_PLUS - DATE_BEGIN_ASSOCS).days 
-        salary_e2_first = 60000.0 * days_e2_first / 365
+        self.days_total = (DATE_LAST_ASSOCS - DATE_BEGIN_ASSOCS).days
+        self.salary_e1 = 50000.0 * self.days_total / 365
 
-        days_e2_second = (DATE_LAST_ASSOCS - DATE_MIDDLE_PLUS).days
-        salary_e2_second = 70000.0 * days_e2_second / 365
+        self.days_e2_first = (DATE_MIDDLE_PLUS - DATE_BEGIN_ASSOCS).days 
+        self.salary_e2_first = 60000.0 * self.days_e2_first / 365
+
+        self.days_e2_second = (DATE_LAST_ASSOCS - DATE_MIDDLE_PLUS).days
+        self.salary_e2_second = 70000.0 * self.days_e2_second / 365
  
-        salary_total = int(salary_e1 + salary_e2_first + salary_e2_second)
+        self.salary_total = (
+            self.salary_e1 + self.salary_e2_first + self.salary_e2_second)
 
-        report = DepartmentSalariesReport(None, None, None)
-
+    def test_compute_salary(self):
         salaries = fetch_employee_salaries(
             self.session,
             DATE_EARLIEST,
             DATE_FOREVER,
         )
 
-        test_total = report.compute_salary(
+        test_total = self.report.compute_salary(
             DATE_EARLIEST,
-            DATE_LAST_ASSOCS,
+            DATE_FOREVER,
             salaries,
         )
-        self.assertEquals(salary_total, test_total)
+        self.assertEquals(self.salary_total, test_total)
+
+    def test_build_map_emp_to_salaries(self):
+        map_e2s = self.report.build_map_emp_to_salaries()
+        self.assertEquals(2, len(map_e2s))
+        
+        e1s = map_e2s[1]
+        self.assertEquals(1, len(e1s))
+        expected = [self.s1_repr]
+        res_repr = [str(r) for r in e1s]
+        self._assert_results_equal(expected, res_repr)
+
+        e2s = map_e2s[2]
+        self.assertEquals(2, len(e2s))
+        expected = [self.s2_repr, self.s3_repr]
+        res_repr = [str(r) for r in e2s]
+        self._assert_results_equal(expected, res_repr)
+
+    def test_build_map_dept_to_dept_employees(self):
+        map_d2des = self.report.build_map_dept_to_dept_employees()
+        self.assertEquals(2, len(map_d2des))
+        
+        d1s = map_d2des['1']
+        self.assertEquals(2, len(d1s))
+        expected = [self.de1_repr, self.de2_repr]
+        res_repr = [str(d) for d in d1s]
+        self._assert_results_equal(expected, res_repr)
+
+        d2s = map_d2des['2']
+        self.assertEquals(1, len(d2s))
+        expected = [self.de3_repr]
+        res_repr = [str(d) for d in d2s]
+        self._assert_results_equal(expected, res_repr)
+
+    def test_integrated(self):
+        dept_totals = self.report.report_department_salaries()
+        self.assertEquals(2, len(dept_totals))
+
+        test_total = dept_totals['1'] + dept_totals['2']
+        self.assertEquals(self.salary_total, test_total)
 
