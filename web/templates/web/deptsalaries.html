@@ -1,0 +1,16 @@
+<table>
+  <tr>
+    <th>Department</th>
+    {% for quarter in quarters %}
+        <th>{{ quarter }}</th>
+    {% endfor %}
+  </tr>
+  <tr>
+    {% for dept, salaries in map_dept_to_salaries.items %}
+      <td>{{ dept }}</td>
+      {% for salary in salaries %}
+        <td>{{ salary }}</td>
+      {% endfor %}
+    {% endfor %}   
+  </tr>
+</table>

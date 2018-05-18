@@ -1,7 +1,116 @@
 # coding: utf-8
 from datetime import date, timedelta
 
-from .models import fetch_employee_salaries, fetch_dept_employees
+from .models import (
+    fetch_departments,
+    fetch_employee_salaries, 
+    fetch_dept_employees,
+    range_date_dept_emp,
+)
+
+
+def build_report_dept_salaries(session):
+    quarters = list()
+    map_dept_to_salaries = dict()
+
+    from_incl, to_excl = range_date_dept_emp(session)
+    delta = to_excl - from_incl
+    if delta.days < 0 or delta.days > 30 * 365:
+        raise ValueError(
+            'No support for year range of {}'.format(delta.years))
+
+    # Get departments.
+    depts = [d.dept_name for d in fetch_departments(session)]
+    if len(depts) <= 0:
+        raise ValueError('No departments found')
+    
+    # Determine earliest quarter start date.
+    start_incl = first_this_quarter(from_incl)
+
+    # Determine latest quarter end date (add year to end).
+    end_excl = first_next_quarter(to_excl)
+    end_excl = date(end_excl.year + 1, end_excl.month, end_excl.day)
+
+    # Build quarterly report up.
+    reporter = DepartmentSalariesReport(session, None, None) 
+    next_start = start_incl
+    while next_start < end_excl:
+        next_end = first_next_quarter(next_start)
+        print('DEBUG! Next: {}'.format(next_end))       
+ 
+        quarters.append(quarter_name(next_start))
+        
+        map_dept_to_salary_total = reporter.report_department_salaries(
+            from_in=next_start, to_ex=next_end) 
+        for dept in depts:
+            salaries = map_dept_to_salaries.get(dept, list())
+            salary_total = map_dept_to_salary_total.get(dept, 0.0)
+            salaries.append(salary_total)
+            map_dept_to_salaries[dept] = salaries
+
+        next_start = next_end
+
+    return quarters, map_dept_to_salaries
+
+
+def first_this_quarter(date_now):
+    """Get start of the current quarter for the specified date.
+
+    The following table shows how the input date's month is mapped to
+    the current quarter's month:
+       date_now's month:          next quarter month:
+            [1, 2, 3]                    1
+            [4, 5, 6]                    4
+            [7, 8, 9]                    7
+            [10, 11, 12]                 10
+    """
+    month = date_now.month
+    if month in [1, 2, 3]:
+        month = 1
+    elif month in [4, 5, 6]:
+        month = 4
+    elif month in [7, 8, 9]:
+        month = 7
+    else:
+        month = 10
+    return date(year=date_now.year, month=month, day=1)
+
+
+def first_next_quarter(date_now):
+    """Get start of the next quarter after the specified date.
+
+    The following table shows how the input date's month is mapped to
+    the following quarter's month:
+       date_now's month:          next quarter month:
+            [1, 2, 3]                    4
+            [4, 5, 6]                    7
+            [7, 8, 9]                    10
+            [10, 11, 12]                 1 (following year)
+    """
+    month = date_now.month
+    if month in [10, 11, 12]:
+        return date(year=date_now.year + 1, month=1, day=1)
+
+    if month in [4, 5, 6]:
+        month = 7
+    elif month in [7, 8, 9]:
+        month = 10
+    else:
+        month = 4
+    return date(year=date_now.year, month=month, day=1) 
+
+
+def quarter_name(date_now):
+    quarter = 4
+    month = date_now.month
+    if month in [1, 2, 3]:
+        quarter = 1
+    elif month in [4, 5, 6]:
+        quarter = 2
+    elif month in [7, 8, 9]:
+        quarter = 3
+    return '{year} Q{quarter}'.format(
+        year=date_now.year, quarter=quarter)
 
 
 class DepartmentSalariesReport():
@@ -10,23 +119,35 @@ class DepartmentSalariesReport():
         self.from_incl = from_inclusive
         self.to_excl = to_exclusive
          
-    def report_department_salaries(self):
+    def report_department_salaries(self, from_in=None, to_ex=None):
         dept_totals = dict()
+
+        # Allow overrides.
+        if from_in:
+            self.from_incl = from_in
+        if to_ex:
+            self.to_excl = to_ex
+
+        # Build a map of department numbers to names.
+        map_dept_no_to_name = {
+           d.dept_no: d.dept_name for d in fetch_departments(self.session)
+        }
 
         # Get a map of employees to salaries for the range.
         map_emp_to_salaries = self.build_map_emp_to_salaries()
     
         # Get a map of dept to dept / employee assocs during range.
-        map_dept_to_dept_emps = self.build_map_dept_to_dept_employees()
+        map_dept_no_to_dept_emps = self.build_map_dept_to_dept_employees()
 
         # Extract and sum up salaries for each dept / employee.
-        for dept, dept_emps in map_dept_to_dept_emps.items():
+        for dept_no, dept_emps in map_dept_no_to_dept_emps.items():
             for de in dept_emps:
                 emp_salaries = map_emp_to_salaries.get(de.emp_no, [])
                 emp_salary_total = self.compute_salary(
                     de.from_date, de.to_date, emp_salaries)
-                dept_totals[de.dept_no] = (
-                    dept_totals.get(de.dept_no, 0) + emp_salary_total
+                dept_name = map_dept_no_to_name.get(dept_no, '???')
+                dept_totals[dept_name] = (
+                    dept_totals.get(dept_name, 0) + emp_salary_total
                 )
         return dept_totals
 
