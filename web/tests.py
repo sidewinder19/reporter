@@ -8,16 +8,26 @@ from .models import (
     remove_database, 
     create_database,
     drop_tables, create_tables, 
-    fetch_employee_salaries, fetch_dept_employees,
+    fetch_departments,
+    fetch_employee_salaries, 
+    fetch_dept_employees,
+    range_date_dept_emp,
     Department, Employee, Salary, DeptEmp)
 
-from .reports import DepartmentSalariesReport
+from .reports import (
+    build_report_dept_salaries,
+    build_report_dept_salaries,
+    first_this_quarter,
+    first_next_quarter,
+    DepartmentSalariesReport)
 
 
 DATE_EARLIEST = date(1995, 2, 1)
+DATE_BEGIN_QUARTER = date(1996, 4, 1)
 DATE_BEGIN_ASSOCS = date(1996, 4, 2)
 DATE_MIDDLE = date(1997, 6, 22)
 DATE_MIDDLE_PLUS = date(1998, 5, 6)
+DATE_END_QUARTER = date(1998, 7, 1)
 DATE_LAST_ASSOCS = date(1999, 10, 31)
 DATE_LATEST = date(2000, 3, 6)
 DATE_FOREVER = date(9999, 1, 1)
@@ -125,7 +135,19 @@ class DatabaseTests(TestCase):
         self.assertEquals(0, len(diff))
 
 
+class DepartmentTests(DatabaseTests):
+
+    def test_fetch(self):
+        depts = fetch_departments(self.session)
+        self.assertEquals(2, len(depts))
+
+
 class DeptEmpTests(DatabaseTests):
+
+    def test_range_date_dept_emp(self):
+        from_incl, to_excl = range_date_dept_emp(self.session)
+        self.assertEquals(DATE_BEGIN_ASSOCS, from_incl)
+        self.assertEquals(DATE_MIDDLE, to_excl)
 
     def test_count_records(self):
         res = self.session.query(Department).all()
@@ -209,20 +231,62 @@ class DepartmentSalariesReportTests(DatabaseTests):
         super().setUp()
         self.report = DepartmentSalariesReport(
             self.session, 
-            DATE_BEGIN_ASSOCS, 
-            DATE_LAST_ASSOCS)
+            DATE_BEGIN_QUARTER, 
+            DATE_END_QUARTER)
 
-        self.days_total = (DATE_LAST_ASSOCS - DATE_BEGIN_ASSOCS).days
+        self.days_total = (DATE_END_QUARTER - DATE_BEGIN_ASSOCS).days
         self.salary_e1 = 50000.0 * self.days_total / 365
 
         self.days_e2_first = (DATE_MIDDLE_PLUS - DATE_BEGIN_ASSOCS).days 
         self.salary_e2_first = 60000.0 * self.days_e2_first / 365
 
-        self.days_e2_second = (DATE_LAST_ASSOCS - DATE_MIDDLE_PLUS).days
+        self.days_e2_second = (DATE_END_QUARTER - DATE_MIDDLE_PLUS).days
         self.salary_e2_second = 70000.0 * self.days_e2_second / 365
  
         self.salary_total = (
             self.salary_e1 + self.salary_e2_first + self.salary_e2_second)
+
+    def test_first_this_quarter(self):
+        d = date(1999, 1, 25)
+        r = first_this_quarter(d)
+        self.assertEquals(date(1999, 1, 1), r)
+
+        d = date(1999, 1, 1)
+        r = first_this_quarter(d)
+        self.assertEquals(date(1999, 1, 1), r)
+
+        d = date(1999, 5, 2)
+        r = first_this_quarter(d)
+        self.assertEquals(date(1999, 4, 1), r)
+
+        d = date(1999, 9, 12)
+        r = first_this_quarter(d)
+        self.assertEquals(date(1999, 7, 1), r)
+
+        d = date(1999, 12, 31)
+        r = first_this_quarter(d)
+        self.assertEquals(date(1999, 10, 1), r)
+
+    def test_first_next_quarter(self):
+        d = date(1999, 1, 25)
+        r = first_next_quarter(d)
+        self.assertEquals(date(1999, 4, 1), r)
+
+        d = date(1999, 1, 1)
+        r = first_next_quarter(d)
+        self.assertEquals(date(1999, 4, 1), r)
+
+        d = date(1999, 5, 2)
+        r = first_next_quarter(d)
+        self.assertEquals(date(1999, 7, 1), r)
+
+        d = date(1999, 9, 12)
+        r = first_next_quarter(d)
+        self.assertEquals(date(1999, 10, 1), r)
+
+        d = date(1999, 12, 31)
+        r = first_next_quarter(d)
+        self.assertEquals(date(2000, 1, 1), r)
 
     def test_compute_salary(self):
         salaries = fetch_employee_salaries(
@@ -270,10 +334,23 @@ class DepartmentSalariesReportTests(DatabaseTests):
         res_repr = [str(d) for d in d2s]
         self._assert_results_equal(expected, res_repr)
 
-    def test_integrated(self):
+    def test_integrated_one_report(self):
         dept_totals = self.report.report_department_salaries()
         self.assertEquals(2, len(dept_totals))
 
-        test_total = dept_totals['1'] + dept_totals['2']
+        test_total = dept_totals['old dept'] + dept_totals['new dept']
         self.assertEquals(self.salary_total, test_total)
+
+    def test_integrated_quarterly_reports(self):
+        quarters, map_d2s = build_report_dept_salaries(self.session)
+
+        self.assertEquals(9, len(quarters))
+        self.assertEquals(2, len(map_d2s))
+
+        self.assertEquals('1996 Q2', quarters[0])
+
+        total_salary = 0.0
+        for dept, salaries in map_d2s.items():
+            total_salary += sum(salaries)
+        self.assertAlmostEquals(self.salary_total, total_salary)
 

@@ -1,5 +1,6 @@
 # coding: utf-8
-from sqlalchemy import Column, Date, ForeignKey, Integer, String, Table
+from sqlalchemy import (
+    asc, desc, Column, Date, ForeignKey, Integer, String, Table)
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.mysql.enumerated import ENUM
 from sqlalchemy.exc import UnboundExecutionError 
@@ -124,6 +125,11 @@ def remove_database(test_mode=False):
     SESSION_FACTORY = None
 
 
+def fetch_departments(session):
+    depts = session.query(Department).all()
+    return depts
+
+
 def fetch_employee_salaries(session, from_incl, to_excl):
     salaries = session.query(Salary).filter(
         Salary.to_date > from_incl
@@ -140,6 +146,19 @@ def fetch_dept_employees(session, from_incl, to_excl):
         DeptEmp.from_date < to_excl
     ).all()
     return dept_emps
+
+
+def range_date_dept_emp(session):
+    de_first = session.query(DeptEmp).order_by(asc('from_date')).first()
+    from_incl = de_first.from_date
+
+    # Get last date in range.
+    # NOTE: Do not query by the last to_date, as it can have an 
+    # 'infite' date of 9999.
+    de_last = session.query(DeptEmp).order_by(desc('from_date')).first()
+    to_excl = de_last.from_date
+ 
+    return from_incl, to_excl
 
 
 t_current_dept_emp = Table(
