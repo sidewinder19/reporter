@@ -13,6 +13,8 @@ from sqlalchemy_utils import (
     create_database as sql_create_database, 
     drop_database
 )
+import os
+
 
 ENGINE = None
 SESSION_FACTORY = None
@@ -24,13 +26,14 @@ metadata = Base.metadata
 def get_configs(test_mode=False):
    conf = {
        'drivername': 'mysql',
-       'host': '172.18.0.2',
+       'host': os.environ['MYSQL_HOST'],  # '172.18.0.2',
        'port': '3306',
-       'username': 'reportinator', #  os.environ['DBUNAME'],
-       'password': 'userpw', #  os.environ['DBPASS'],
+       'username': os.environ['MYSQL_USER'], # 'reportinator', #  os.environ['DBUNAME'],
+       'password': os.environ['MYSQL_PASSWORD'], # 'userpw', #  os.environ['DBPASS'],
        'database': 'employees', #  os.environ['DBNAME']
    }
    if test_mode:
+       conf['host'] = os.environ['MYSQL_HOST_TEST']
        conf['database'] = 'test_' + conf['database']
    return conf
 
