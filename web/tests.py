@@ -342,7 +342,8 @@ class DepartmentSalariesReportTests(DatabaseTests):
         self.assertEquals(self.salary_total, test_total)
 
     def test_integrated_quarterly_reports(self):
-        quarters, map_d2s = build_report_dept_salaries(self.session)
+        quarters, map_d2s = build_report_dept_salaries(
+            self.session, num_quarters_desired=9)
 
         self.assertEquals(9, len(quarters))
         self.assertEquals(2, len(map_d2s))
