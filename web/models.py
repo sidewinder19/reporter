@@ -1,6 +1,6 @@
 # coding: utf-8
 from sqlalchemy import (
-    asc, desc, Column, Date, ForeignKey, Integer, String, Table)
+    and_, asc, desc, func, Column, Date, ForeignKey, Integer, String, Table)
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.mysql.enumerated import ENUM
 from sqlalchemy.exc import UnboundExecutionError 
@@ -132,18 +132,14 @@ def fetch_departments(session):
 
 def fetch_employee_salaries(session, from_incl, to_excl):
     salaries = session.query(Salary).filter(
-        Salary.to_date > from_incl
-    ).filter(
-        Salary.from_date < to_excl
+        and_(Salary.to_date > from_incl, Salary.from_date < to_excl)
     ).all()
     return salaries
 
 
 def fetch_dept_employees(session, from_incl, to_excl):
     dept_emps = session.query(DeptEmp).filter(
-        DeptEmp.to_date > from_incl
-    ).filter(
-        DeptEmp.from_date < to_excl
+        and_(DeptEmp.to_date > from_incl, DeptEmp.from_date < to_excl)
     ).all()
     return dept_emps
 

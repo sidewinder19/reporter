@@ -9,34 +9,45 @@ from .models import (
 )
 
 
-def build_report_dept_salaries(session):
+
+def build_report_dept_salaries(
+    session, date_start_desired=None, num_quarters_desired=4):
+
+    # If not specified, pick the earliest date in the data set.
+    date_start = date_start_desired
+    if not date_start_desired:
+        from_incl, _ = range_date_dept_emp(session)
+        date_start = from_incl
+
+    # Hard limit the number of quarters.
+    num_quarters = min(12, num_quarters_desired)
+
     quarters = list()
     map_dept_to_salaries = dict()
-
-    from_incl, to_excl = range_date_dept_emp(session)
-    delta = to_excl - from_incl
-    if delta.days < 0 or delta.days > 30 * 365:
-        raise ValueError(
-            'No support for year range of {}'.format(delta.years))
 
     # Get departments.
     depts = [d.dept_name for d in fetch_departments(session)]
     if len(depts) <= 0:
         raise ValueError('No departments found')
-    
-    # Determine earliest quarter start date.
-    start_incl = first_this_quarter(from_incl)
 
-    # Determine latest quarter end date (add year to end).
-    end_excl = first_next_quarter(to_excl)
-    end_excl = date(end_excl.year + 1, end_excl.month, end_excl.day)
+    # Determine earliest quarter start date.
+    start_incl = first_this_quarter(date_start)
+
+    # Determine last date for report.
+    num_years = int(num_quarters / 4)
+    num_months = num_quarters * 3 - num_years * 12
+    month_end = num_months + start_incl.month
+    if month_end > 12:
+        num_years += 1
+        month_end -= 12
+    end_excl = date(
+        start_incl.year + num_years, month_end, start_incl.day)
 
     # Build quarterly report up.
     reporter = DepartmentSalariesReport(session, None, None) 
     next_start = start_incl
     while next_start < end_excl:
         next_end = first_next_quarter(next_start)
-        print('DEBUG! Next: {}'.format(next_end))       
  
         quarters.append(quarter_name(next_start))
         
@@ -47,6 +58,8 @@ def build_report_dept_salaries(session):
             salary_total = map_dept_to_salary_total.get(dept, 0.0)
             salaries.append(salary_total)
             map_dept_to_salaries[dept] = salaries
+
+        session.commit()
 
         next_start = next_end
 
@@ -127,6 +140,7 @@ class DepartmentSalariesReport():
             self.from_incl = from_in
         if to_ex:
             self.to_excl = to_ex
+        print('Start/End = {}/{}'.format(self.from_incl, self.to_excl))
 
         # Build a map of department numbers to names.
         map_dept_no_to_name = {
@@ -157,7 +171,12 @@ class DepartmentSalariesReport():
         salaries_all = fetch_employee_salaries(
             self.session, self.from_incl, self.to_excl
         )
+        print('total salaries: {}'.format(len(salaries_all)))
+        i = 0
         for salary in salaries_all:
+            if i < 10:
+                i += 1
+                print('....salary: {}'.format(salary)) 
             try:
                 map_e2s[salary.emp_no].append(salary)
             except KeyError:
@@ -170,7 +189,12 @@ class DepartmentSalariesReport():
         dept_emps_all = fetch_dept_employees(
             self.session, self.from_incl, self.to_excl
         )
+        print('total dept emps: {}'.format(len(dept_emps_all))) 
+        i = 0
         for dept_emp in dept_emps_all:
+            if i < 10:
+                i += 1
+                print('....dept emp: {}'.format(dept_emp))
             try:
                 map_d2de[dept_emp.dept_no].append(dept_emp)
             except KeyError:
