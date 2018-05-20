@@ -7,10 +7,10 @@ services:
             - '3307:3306'
         restart: always
         environment:
-            MYSQL_ROOT_PASSWORD: masterpw
-            MYSQL_DATABASE: employees
-            MYSQL_USER: reportinator
-            MYSQL_PASSWORD: userpw
+            MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+            MYSQL_DATABASE: "${MYSQL_DATABASE}"
+            MYSQL_USER: "${MYSQL_USER}"
+            MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
         volumes:
             - /var/db_data:/var/lib/mysql
         networks:
@@ -22,10 +22,10 @@ services:
             - '3307:3306'
         restart: always
         environment:
-            MYSQL_ROOT_PASSWORD: masterpw
-            MYSQL_DATABASE: test_employees
-            MYSQL_USER: reportinator
-            MYSQL_PASSWORD: userpw
+            MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+            MYSQL_DATABASE: "${MYSQL_DATABASE_TEST}"
+            MYSQL_USER: "${MYSQL_USER}"
+            MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
         volumes:
             - /var/db_data_test:/var/lib/mysql
         networks:
@@ -40,10 +40,10 @@ services:
             dockerfile: ./docker/api/Dockerfile
         command: python3 manage.py runserver 0.0.0.0:8000
         environment:
-            MYSQL_HOST: db
-            MYSQL_HOST_TEST: dbtest
-            MYSQL_USER: reportinator
-            MYSQL_PASSWORD: userpw
+            MYSQL_HOST: "${MYSQL_HOST}"
+            MYSQL_HOST_TEST: "${MYSQL_HOST_TEST}"
+            MYSQL_USER: "${MYSQL_USER}"
+            MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
         volumes:
             - .:/code
         ports:
