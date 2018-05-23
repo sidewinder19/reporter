@@ -26,14 +26,15 @@ metadata = Base.metadata
 def get_configs(test_mode=False):
    conf = {
        'drivername': 'mysql',
-       'host': os.environ['MYSQL_HOST'],  # '172.18.0.2',
-       'port': '3306',
+       'host': os.environ['MYSQL_HOST'],  # Ex: '172.18.0.2'
+       'port': os.environ['MYSQL_PORT'],  # Ex: '3306'
        'username': os.environ['MYSQL_USER'], # 'reportinator', #  os.environ['DBUNAME'],
        'password': os.environ['MYSQL_PASSWORD'], # 'userpw', #  os.environ['DBPASS'],
        'database': 'employees', #  os.environ['DBNAME']
    }
    if test_mode:
        conf['host'] = os.environ['MYSQL_HOST_TEST']
+       conf['port'] = os.environ['MYSQL_PORT_TEST']
        conf['database'] = 'test_' + conf['database']
    return conf
 

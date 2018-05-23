@@ -4,7 +4,7 @@ services:
         image: mysql:5.7
         command: --disable-partition-engine-check
         ports:
-            - '3307:3306'
+            - '3306:3306'
         restart: always
         environment:
             MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
@@ -30,10 +30,6 @@ services:
             - /var/db_data_test:/var/lib/mysql
         networks:
             - backend
-    seed:
-        image: ubuntu
-        environment:
-            GIT_REPO: git clone https://github.com/datacharmer/test_db.git
     api:
         build:
             context: .
@@ -42,12 +38,14 @@ services:
         environment:
             MYSQL_HOST: "${MYSQL_HOST}"
             MYSQL_HOST_TEST: "${MYSQL_HOST_TEST}"
+            MYSQL_PORT: "${MYSQL_PORT}"
+            MYSQL_PORT_TEST: "${MYSQL_PORT_TEST}"
             MYSQL_USER: "${MYSQL_USER}"
             MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
         volumes:
             - .:/code
         ports:
-            - '8080:8000'
+            - '8000:8000'
         networks:
             - backend
 networks:
