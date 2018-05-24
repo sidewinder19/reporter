@@ -1,18 +1,14 @@
 # coding: utf-8
 from sqlalchemy import (
-    and_, asc, desc, func, Column, Date, ForeignKey, Integer, String, Table)
-from sqlalchemy.orm import relationship
+    and_, asc, create_engine, desc, func, 
+    Column, Date, ForeignKey, Integer, String, Table
+)
 from sqlalchemy.dialects.mysql.enumerated import ENUM
+from sqlalchemy.engine.url import URL
 from sqlalchemy.exc import UnboundExecutionError 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine
-from sqlalchemy.engine.url import URL
-from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy_utils import (
-    database_exists, 
-    create_database as sql_create_database, 
-    drop_database
-)
+from sqlalchemy.orm import relationship, scoped_session, sessionmaker
+
 import os
 
 
@@ -24,13 +20,14 @@ metadata = Base.metadata
 
 
 def get_configs(test_mode=False):
+   """Retrieve database configs from environment"""
    conf = {
        'drivername': 'mysql',
        'host': os.environ['MYSQL_HOST'],  # Ex: '172.18.0.2'
        'port': os.environ['MYSQL_PORT'],  # Ex: '3306'
-       'username': os.environ['MYSQL_USER'], # 'reportinator', #  os.environ['DBUNAME'],
-       'password': os.environ['MYSQL_PASSWORD'], # 'userpw', #  os.environ['DBPASS'],
-       'database': 'employees', #  os.environ['DBNAME']
+       'username': os.environ['MYSQL_USER'], # Ex: 'reportinator'
+       'password': os.environ['MYSQL_PASSWORD'], # Ex: 'userpw'
+       'database': 'employees',
    }
    if test_mode:
        conf['host'] = os.environ['MYSQL_HOST_TEST']
@@ -40,6 +37,7 @@ def get_configs(test_mode=False):
 
 
 def get_engine(test_mode=False):
+    """Create our database engine."""
     global ENGINE
     if ENGINE:
         return ENGINE
@@ -50,37 +48,13 @@ def get_engine(test_mode=False):
 
 
 def create_tables(test_mode=False):
+    """Create database tables based on models below."""
     engine = get_engine(test_mode=test_mode)    
     metadata.create_all(bind=engine)
 
 
-def create_database_fail(test_mode=False):
-    engine = get_engine(test_mode=test_mode)
-    #conn = engine.connect()
-    conf = get_configs(test_mode=test_mode)
-    database = conf['database']
-    # conn.execute('CREATE DATABASE IF NOT EXISTS {}'.format(database))
-
-    metadata.create_all(bind=engine)
-
-    # return conn
-
-
-def create_database(test_mode=False):
-    engine = get_engine(test_mode=test_mode)
-   
-    #conf = get_configs(test_mode=test_mode)
-    #database = conf['database'] 
-    #engine.execute('CREATE DATABASE IF NOT EXISTS {}'.format(database))
-    #engine.execute('USE {}'.format(database))
-    metadata.create_all(bind=engine)
-
-    #if not database_exists(engine.url):
-    #    sql_create_database(engine.url)
-    #    metadata.create_all(bind=engine)
-
-
 def get_session_factory(test_mode=False):
+    """Create our factory to create database connections."""
     global SESSION_FACTORY
     if SESSION_FACTORY:
         return SESSION_FACTORY
@@ -93,16 +67,12 @@ def get_session_factory(test_mode=False):
 
 
 def get_session(test_mode=False):
+    """Get a session/connection to use with our database."""
     return get_session_factory(test_mode=test_mode)()
 
 
-def remove_database_fail(test_mode=False):
-    conf = get_configs(test_mode=test_mode)
-    database = conf['database']
-    # connection.execute('DROP DATABASE IF EXISTS {}'.format(database))
-
-
 def drop_tables(test_mode=False):
+    """Drop tables in the target database."""
     engine = get_engine(test_mode=test_mode)
     try:
         metadata.drop_all(engine)
@@ -110,31 +80,14 @@ def drop_tables(test_mode=False):
         pass  # Database doesn't exist yet, so noting to remove.
 
 
-def remove_database(test_mode=False):
-    try:
-        metadata.drop_all()
-    except UnboundExecutionError:
-        pass  # Database doesn't exist yet, so noting to remove.
-
-    engine = get_engine(test_mode=test_mode)
-    conf = get_configs(test_mode=test_mode)
-    database = conf['database']
-    engine.execute('USE {}'.format(database))
-    engine.execute('DROP DATABASE IF EXISTS {}'.format(database))
-
-    global ENGINE, SESSION_FACTORY
-    if ENGINE:
-        ENGINE.dispose()
-    ENGINE = None
-    SESSION_FACTORY = None
-
-
 def fetch_departments(session):
+    """Fetch departments."""
     depts = session.query(Department).all()
     return depts
 
 
 def fetch_employee_salaries(session, from_incl, to_excl):
+    """Get Salaries that start/end overlapping with provided range."""
     salaries = session.query(Salary).filter(
         and_(Salary.to_date > from_incl, Salary.from_date < to_excl)
     ).all()
@@ -142,6 +95,7 @@ def fetch_employee_salaries(session, from_incl, to_excl):
 
 
 def fetch_dept_employees(session, from_incl, to_excl):
+    """Get DeptEmps that start/end overlapping with provided range."""
     dept_emps = session.query(DeptEmp).filter(
         and_(DeptEmp.to_date > from_incl, DeptEmp.from_date < to_excl)
     ).all()
@@ -149,6 +103,7 @@ def fetch_dept_employees(session, from_incl, to_excl):
 
 
 def range_date_dept_emp(session):
+    """Get date range of all possible DeptEmp entities."""
     de_first = session.query(DeptEmp).order_by(asc('from_date')).first()
     from_incl = de_first.from_date
 
@@ -159,6 +114,11 @@ def range_date_dept_emp(session):
     to_excl = de_last.from_date
  
     return from_incl, to_excl
+
+
+# =======
+# Generated models below. Avoid hand modifying these classes.
+# =======
 
 
 t_current_dept_emp = Table(
