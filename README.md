@@ -1,6 +1,6 @@
 # Reporter System
 
-The Reporter System is a proof of concept project to create a report showing quarterly spending by department, for the sample datagbase available [here](https://github.com/datacharmer/test_db)
+The Reporter System is a proof of concept project to create a report showing quarterly spending by department, for the sample database available [here](https://github.com/datacharmer/test_db).
 
 ## Caveats
 
@@ -8,13 +8,11 @@ WARNING! This POC uses a brute-force approach to gathering database data and the
 
 Additionally, the POC doesn't try to build this report in the background, rather it computes the report on each web request made to display it. 
 
-Finally, this POC is not deemed to be secure, with no secret environment variables or TLS certificates used to harden passwords and inter-container communications.
-
-Steps that could be taken to move this POC into a more production ready status are detailed at the end of this read me file. 
+Steps that could be taken to move this POC into a more production ready status are detailed in the 'Next Steps' section below. 
 
 ## Getting Started
 
-These instructions install a copy of the project on your local machine for development and testing purposes.
+These instructions install a copy of this project on your local machine for development and testing purposes.
 
 ### Prerequisites
 
@@ -83,24 +81,23 @@ This proof-of-concept project uses docker-compose to build and run containers on
 
 ### Report Generation Tied to Web Requeest
 
-The department/salary report is only generated when requested from the web request in the 'Running a request...' section above. Generally speaking, reports can take a while to generate, and therefore should be run as periodic process *outside* of the actions from a Jenkins server would support automated CI/CD processes as well.
- web request. The web request should therefore be retrieving and displaying the *result* of this report generation.
+The department/salary report is only generated when requested from the web request in the 'Running a request...' section above. Generally speaking, reports can take a while to generate, and therefore should be run as a periodic process *outside* of the web request. The web request should therefore be retrieving and displaying the *result* of this report generation.
 
 ### Optimizing report generation
 
-The report generation used currently is a brute force approach, pulling DeptEmp and Salary entities that span each quarterly date range computed for the report. The sample data set however quickly adds thousands of DeptEmp and Salary entities that match this criteria. If a DeptEmp or Salary employee to date range spans multiple quarters (or lasts 'forever' as signified by a year of 9999), then it will be retrieved for all subsequent quarters, in addition to any new ranges added, so there is a compounding effect of even more entities retrieved and processed with subsequent quarters. 
+The report generation used currently is a brute force approach, pulling DeptEmp and Salary entities that span each quarterly date range computed for the report. This approach becomes very slow after the first few quarters however, as the sample data set quickly adds thousands of DeptEmp and Salary entities that match this criteria. If a DeptEmp or Salary employee to date range spans multiple quarters (or lasts 'forever' as signified by a year of 9999), then it will be retrieved for all subsequent quarters, in addition to any new ranges added, so there is a compounding effect of even more entities retrieved and processed with subsequent quarters. 
 
-Simply joining the Salary entities with DeptEmp ones is not sufficient, as date ranges for a given employee can change independently over time. They can also only consume one day of the entire quarter (so 1/365th of annual salary, or the entire quarter.
+Simply joining the Salary entities with DeptEmp ones is not sufficient, as date ranges for a given employee can change independently between the Salary and DeptEmp entities over time. They can also consume from one day of the entire quarter (so 1/365th of annual salary), up to the entire quarter.
 
-A more efficient approach would be to cache the DeptEmp and Salary entities that span across subsequent quarters, as they will always take up 3 months worth of salary impact with no need for special computation. Then, only new date ranges, or terminating ranges for cached entitites, for these two entity types have to be specially processed. The only downside is that the entire data set would need to be processed from the start, rather than selecting any year/quarter in the data set.
+A more efficient approach would be to cache the DeptEmp and Salary entities that span across subsequent quarters, as they will always contribute 3 month's worth of salary impact with no need for special computation. Then, only new entities with new date ranges, or terminating ranges for cached entities, have to be processed to compute the salary impact to the department. The only downside is that the entire data set needs to be processed from the start, rather than selecting any year/quarter in the data set.
 
 Hence next steps should be to pursue this more efficient entity caching approach, combined with generating and caching the report on a quarterly basis, for quick retrieval on GET requests thereafter. 
 
 ### Deployment to production
 
-The docker-compose file provided and associated Dockerfiles only run on one Docker host currently. [This blog](https://medium.com/@basi/docker-compose-from-development-to-production-88000124a57c) provides an approach to create Docker images that can be run in staging or production, such as via AWS ECS. Executing these actions from a Jenkins server would support automated CI/CD processes. 
+The provided docker-compose file and associated Dockerfiles only run on one Docker host currently. [This blog](https://medium.com/@basi/docker-compose-from-development-to-production-88000124a57c) provides an approach to create Docker images that can be run in staging or production, such as via AWS ECS. Executing these actions from a Jenkins server would support automated CI/CD processes. 
 
-It would also be good to add an nginx reverse proxy server in front of the Django server, to support TLS, caching, etc. The SQLAlchemy session process also needs to be tied in with Django's request lifecycle, rather than explicitly invoked as done now.
+It would also be good to add an nginx reverse proxy server in front of the Django server, to support TLS, caching, etc. The SQLAlchemy session process also needs to be tied in with Django's request lifecycle, rather than explicitly invoked as done now. Django's own ORM cannot be used for the sample dataset, as it doesn't support composite keys as installed on several tables. 
 
 ## Authors
 
