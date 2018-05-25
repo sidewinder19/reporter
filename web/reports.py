@@ -12,6 +12,14 @@ from .models import (
 
 def build_report_dept_salaries(
     session, date_start_desired=None, num_quarters_desired=4):
+    """Top level report generation function.
+
+    This function determmines what year to start the report at, and 
+    for how many quarters thereafter. Then it calls the 
+    DepartmentSalariesReport class to generate each quarter's department
+    to total salary spend report. Each quarterly report is stitched into
+    the final matrix of salaries per department over quarter.
+    """
 
     # If not specified, pick the earliest date in the data set.
     date_start = date_start_desired
@@ -114,6 +122,7 @@ def first_next_quarter(date_now):
 
 
 def quarter_name(date_now):
+    """Create a friendly name for the quarter the date_now is in."""
     quarter = 4
     month = date_now.month
     if month in [1, 2, 3]:
@@ -127,12 +136,33 @@ def quarter_name(date_now):
 
 
 class DepartmentSalariesReport():
+    """This class generates a report for the specified date range.
+
+    The generated report shows total salary consumed per department,
+    by employees assigned to the departent.
+
+    The DeptEmp entities provide the date range that employees were
+    assigned to the department. The Salary entities provide the date
+    range that employees earned a specific annual salary for. This 
+    class determines what portions of those employee salaries overlap
+    with their tenure in a given department. Note that employees are
+    assumed to consume a daily salary based on (annual salary / 365).
+    This daily rate is then used to determine the final salary impact
+    on their assigned department. This will not align with actual 
+    payment dates to employees, so the results should be considered to 
+    be an approximation of actual salaries consumed in a given quarter.
+
+    This class uses a 'brute force' implementation, that could be 
+    optimized. Please refer to the README.md documentation in the
+    source repository for more information.
+    """
     def __init__(self, session, from_inclusive, to_exclusive):
         self.session = session
         self.from_incl = from_inclusive
         self.to_excl = to_exclusive
          
     def report_department_salaries(self, from_in=None, to_ex=None):
+        """Main method, computing department to total salary."""
         dept_totals = dict()
 
         # Allow overrides.
@@ -165,7 +195,7 @@ class DepartmentSalariesReport():
         return dept_totals
 
     def build_map_emp_to_salaries(self):
-        """Buildup a map of employees to their salary(ies) in range."""
+        """Build a map of employees to their salary(ies) in range."""
         map_e2s = dict()
         salaries_all = fetch_employee_salaries(
             self.session, self.from_incl, self.to_excl
@@ -178,7 +208,7 @@ class DepartmentSalariesReport():
         return map_e2s
 
     def build_map_dept_to_dept_employees(self):
-        """Get department / employee assocs during range."""
+        """Build a map of department / employee assocs in range."""
         map_d2de = dict()
         dept_emps_all = fetch_dept_employees(
             self.session, self.from_incl, self.to_excl
@@ -191,6 +221,15 @@ class DepartmentSalariesReport():
         return map_d2de
 
     def compute_salary(self, from_incl_sub, to_excl_sub, emp_salaries):
+        """Compute the total salaries for date range.
+
+        All employee salaries provided within the provided date range
+        are summed up to a total amount. The provided salaries are 
+        typically on behalf of a single employee. There could be more
+        than one event if an employee received a raise during the 
+        provided date range.
+        """ 
+
         salary_total = 0.0
 
         # Restrict range to this instance's configured range.
