@@ -51,7 +51,7 @@ Next, run the 'all' make target, to install remaining dependencies, boot up the 
 make all
 ```
 
-## Running the tests
+## Running The Tests
 
 Once installed successfully per the previous section, tests can be run again by calling:
 
@@ -61,7 +61,7 @@ make tests
 
 These tests check the database ORM models and access functions, used to interface with the MySQL database. They also test out the report generator used to compute quarterly salary spend per department.
 
-## Running a request to generate a report
+## Running a Request To Generate a Report
 
 Reports are generated each time a request is made to the web node spun up via the `make all` target above, using a `curl` command such as this one:
 
@@ -75,6 +75,24 @@ Where the IP address used is available via this call:
 sudo docker inspect --format '{{ .NetworkSettings.Networks.reporter_backend.IPAddress }}' reporter_api_1
 ```
 
+## Code Structure
+
+The main Django settings file is found here:
+
+```
+reporter/settings.py
+```
+
+The web application that receives, processes, and responds to the GET request in the previous section is comprised of the following modules:
+
+```
+web/reports.py - Report generation logic is found here
+web/views.py - The controller responding to the 'reports' resource GET
+web/tests.py - The database-centric unit tests executed by 'make tests'
+web/models.py - The SQLAlchemy models and data accessor methods
+web/templates/web/deptsalaries.hmtl - The HTML table report renderer template
+```
+
 ## Next Steps
 
 This proof-of-concept project uses docker-compose to build and run containers on a local target Ubuntu machine. More work is needed before this project can be pushed into production, as detailed in the following sections.
@@ -83,7 +101,7 @@ This proof-of-concept project uses docker-compose to build and run containers on
 
 The department/salary report is only generated when requested from the web request in the 'Running a request...' section above. Generally speaking, reports can take a while to generate, and therefore should be run as a periodic process *outside* of the web request. The web request should therefore be retrieving and displaying the *result* of this report generation.
 
-### Optimizing report generation
+### Optimizing Report Generation
 
 The report generation used currently is a brute force approach, pulling DeptEmp and Salary entities that span each quarterly date range computed for the report. This approach becomes very slow after the first few quarters however, as the sample data set quickly adds thousands of DeptEmp and Salary entities that match this criteria. If a DeptEmp or Salary employee to date range spans multiple quarters (or lasts 'forever' as signified by a year of 9999), then it will be retrieved for all subsequent quarters, in addition to any new ranges added, so there is a compounding effect of even more entities retrieved and processed with subsequent quarters. 
 
@@ -93,7 +111,7 @@ A more efficient approach would be to cache the DeptEmp and Salary entities that
 
 Hence next steps should be to pursue this more efficient entity caching approach, combined with generating and caching the report on a quarterly basis, for quick retrieval on GET requests thereafter. 
 
-### Deployment to production
+### Deployment To Production
 
 The provided docker-compose file and associated Dockerfiles only run on one Docker host currently. [This blog](https://medium.com/@basi/docker-compose-from-development-to-production-88000124a57c) provides an approach to create Docker images that can be run in staging or production, such as via AWS ECS. Executing these actions from a Jenkins server would support automated CI/CD processes. 
 
