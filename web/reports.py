@@ -140,7 +140,6 @@ class DepartmentSalariesReport():
             self.from_incl = from_in
         if to_ex:
             self.to_excl = to_ex
-        print('Start/End = {}/{}'.format(self.from_incl, self.to_excl))
 
         # Build a map of department numbers to names.
         map_dept_no_to_name = {
@@ -171,12 +170,7 @@ class DepartmentSalariesReport():
         salaries_all = fetch_employee_salaries(
             self.session, self.from_incl, self.to_excl
         )
-        print('total salaries: {}'.format(len(salaries_all)))
-        i = 0
         for salary in salaries_all:
-            if i < 10:
-                i += 1
-                print('....salary: {}'.format(salary)) 
             try:
                 map_e2s[salary.emp_no].append(salary)
             except KeyError:
@@ -189,12 +183,7 @@ class DepartmentSalariesReport():
         dept_emps_all = fetch_dept_employees(
             self.session, self.from_incl, self.to_excl
         )
-        print('total dept emps: {}'.format(len(dept_emps_all))) 
-        i = 0
         for dept_emp in dept_emps_all:
-            if i < 10:
-                i += 1
-                print('....dept emp: {}'.format(dept_emp))
             try:
                 map_d2de[dept_emp.dept_no].append(dept_emp)
             except KeyError:

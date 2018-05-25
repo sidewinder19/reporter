@@ -1,12 +1,9 @@
 from datetime import date
-#from django.test import TestCase
 from unittest import TestCase
 import time
 
 from .models import (
     get_session, 
-    remove_database, 
-    create_database,
     drop_tables, create_tables, 
     fetch_departments,
     fetch_employee_salaries, 
@@ -16,12 +13,12 @@ from .models import (
 
 from .reports import (
     build_report_dept_salaries,
-    build_report_dept_salaries,
     first_this_quarter,
     first_next_quarter,
     DepartmentSalariesReport)
 
 
+# Static dates used for test set below.
 DATE_EARLIEST = date(1995, 2, 1)
 DATE_BEGIN_QUARTER = date(1996, 4, 1)
 DATE_BEGIN_ASSOCS = date(1996, 4, 2)
@@ -34,16 +31,15 @@ DATE_FOREVER = date(9999, 1, 1)
 
 
 class DatabaseTests(TestCase):
+    """Base database testing class."""
 
     def setUp(self):
-        print('setUp')
         drop_tables(test_mode=True)
         create_tables(test_mode=True)
         self.session = get_session(test_mode=True)
         self._seed_models()
 
     def tearDown(self):
-        print('tearDown')
         self.session.commit()
         self.session.close()
 
@@ -129,6 +125,7 @@ class DatabaseTests(TestCase):
         self.session.commit() 
 
     def _assert_results_equal(self, expected, res_repr):
+        """Compare collections of database models, based on __repr__ output."""
         diff = set(expected) - set(res_repr)
         self.assertEquals(0, len(diff))
         diff = set(res_repr) - set(expected)
@@ -136,6 +133,7 @@ class DatabaseTests(TestCase):
 
 
 class DepartmentTests(DatabaseTests):
+    """Test Department entity operations."""
 
     def test_fetch(self):
         depts = fetch_departments(self.session)
@@ -143,6 +141,7 @@ class DepartmentTests(DatabaseTests):
 
 
 class DeptEmpTests(DatabaseTests):
+    """Test DeptEmp entity operations."""
 
     def test_range_date_dept_emp(self):
         from_incl, to_excl = range_date_dept_emp(self.session)
@@ -175,7 +174,6 @@ class DeptEmpTests(DatabaseTests):
         date_start = DATE_EARLIEST
         date_end = DATE_MIDDLE
 
-
         res = fetch_dept_employees(
             self.session,
             date_start,
@@ -189,6 +187,7 @@ class DeptEmpTests(DatabaseTests):
 
 
 class SalaryTests(DatabaseTests):
+    """Test Salary entity operations."""
 
     def test_count_records(self):
         res = self.session.query(Salary).all()
@@ -226,6 +225,7 @@ class SalaryTests(DatabaseTests):
 
 
 class DepartmentSalariesReportTests(DatabaseTests):
+    """Test report generation logic."""
 
     def setUp(self):
         super().setUp()
