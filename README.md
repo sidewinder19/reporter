@@ -115,7 +115,11 @@ Hence next steps should be to pursue this more efficient entity caching approach
 
 The provided docker-compose file and associated Dockerfiles only run on one Docker host currently. [This blog](https://medium.com/@basi/docker-compose-from-development-to-production-88000124a57c) provides an approach to create Docker images that can be run in staging or production, such as via AWS ECS. Executing these actions from a Jenkins server would support automated CI/CD processes. 
 
+Currently as well the database containers utilize the docker host file system for storing the MySQL database tables and records. Per the blog above, this local storage could be provided as a docker-compose override file, for a 'dev' mode, with production favoring block storage or NFS cluster (e.g. GlusterFS). 
+
 It would also be good to add an nginx reverse proxy server in front of the Django server, to support TLS, caching, etc. The SQLAlchemy session process also needs to be tied in with Django's request lifecycle, rather than explicitly invoked as done now. Django's own ORM cannot be used for the sample dataset, as it doesn't support composite keys as installed on several tables. 
+
+If deploying to AWS (e.g. ECS), secrets such as passwords could be replaced with KMS key references, accessible only by containers that boot with the correct role via IAM.
 
 ## Authors
 
