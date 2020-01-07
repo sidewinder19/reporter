@@ -1,0 +1,2835 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "version" : "1.0.0",
+    "title" : "PPO Services",
+    "contact" : {
+      "email" : "jayjay@iheartmedia.com"
+    }
+  },
+  "tags" : [ {
+    "name" : "Production Orders"
+  }, {
+    "name" : "Operations"
+  } ],
+  "servers" : [ {
+    "description" : "SwaggerHub API Auto Mocking",
+    "url" : "https://virtserver.swaggerhub.com/Dumbee/PP-Bulk-Actual/1.0.0"
+  }, {
+    "url" : "http://{urls}/api",
+    "variables" : {
+      "urls" : {
+        "enum" : [ "ppo.iheartmedia.com", "dev-ccrlanvcra1sat.usa.ccu.clearchannel.com", "dev-ccrlanvcra2sat.usa.ccu.clearchannel.com" ],
+        "default" : "ppo.iheartmedia.com"
+      }
+    }
+  } ],
+  "paths" : {
+    "/production-orders/{productionOrderId}/spots/{spotId}" : {
+      "get" : {
+        "tags" : [ "Production Orders" ],
+        "summary" : "Retrieve a spot.",
+        "parameters" : [ {
+          "name" : "productionOrderId",
+          "in" : "path",
+          "description" : "Production Order ID",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "spotId",
+          "in" : "path",
+          "description" : "Spot ID",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Spot successfully retrieved.",
+            "content" : {
+              "application/vnd.iheartmedia.v1.0.0+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Spot"
+                }
+              }
+            }
+          },
+          "404" : {
+            "$ref" : "#/components/responses/NotFound"
+          },
+          "422" : {
+            "$ref" : "#/components/responses/UnprocessableEntity"
+          },
+          "500" : {
+            "$ref" : "#/components/responses/GeneralServerError"
+          }
+        }
+      }
+    },
+    "/production-orders/spots/files" : {
+      "post" : {
+        "tags" : [ "Production Orders" ],
+        "summary" : "Dispatch Production Order file operations.",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "body" : {
+                    "type" : "object",
+                    "properties" : {
+                      "parameters" : {
+                        "type" : "object",
+                        "properties" : {
+                          "spotIds" : {
+                            "type" : "array",
+                            "items" : {
+                              "type" : "integer"
+                            }
+                          },
+                          "productionOrderIds" : {
+                            "type" : "array",
+                            "items" : {
+                              "type" : "integer"
+                            }
+                          }
+                        }
+                      },
+                      "body" : {
+                        "type" : "object",
+                        "properties" : {
+                          "data" : {
+                            "type" : "object",
+                            "properties" : {
+                              "type" : {
+                                "type" : "string"
+                              },
+                              "comment" : {
+                                "type" : "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Operations Completed.",
+            "content" : {
+              "application/vnd.iheartmedia.v1.0.0.bulk+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/BulkResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "$ref" : "#/components/responses/BadRequest"
+          },
+          "422" : {
+            "$ref" : "#/components/responses/UnprocessableEntity"
+          },
+          "500" : {
+            "$ref" : "#/components/responses/GeneralServerError"
+          }
+        }
+      }
+    },
+    "/bulk" : {
+      "post" : {
+        "tags" : [ "Operations" ],
+        "summary" : "Dispatch operations.",
+        "requestBody" : {
+          "content" : {
+            "application/application/vnd.iheartmedia.v1.0.0.bulk+json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BulkRequestBody"
+              },
+              "examples" : {
+                "POST" : {
+                  "$ref" : "#/components/examples/PostBulkRequest"
+                },
+                "PUT" : {
+                  "$ref" : "#/components/examples/PutBulkRequest"
+                },
+                "GET" : {
+                  "$ref" : "#/components/examples/GetBulkRequest"
+                },
+                "BATCH" : {
+                  "$ref" : "#/components/examples/BatchBulkRequest"
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Operations Completed.",
+            "content" : {
+              "application/vnd.iheartmedia.v1.0.0.bulk+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/BulkResponse"
+                  }
+                },
+                "examples" : {
+                  "POST" : {
+                    "$ref" : "#/components/examples/PostBulkResponse"
+                  },
+                  "PUT" : {
+                    "$ref" : "#/components/examples/PutBulkResponse"
+                  },
+                  "GET" : {
+                    "$ref" : "#/components/examples/GetBulkResponse"
+                  },
+                  "BATCH" : {
+                    "$ref" : "#/components/examples/BatchBulkResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "$ref" : "#/components/responses/BadRequest"
+          },
+          "422" : {
+            "$ref" : "#/components/responses/UnprocessableEntity"
+          },
+          "500" : {
+            "$ref" : "#/components/responses/GeneralServerError"
+          }
+        }
+      }
+    },
+    "/batch" : {
+      "post" : {
+        "tags" : [ "Operations" ],
+        "summary" : "Perform batch operations.",
+        "requestBody" : {
+          "content" : {
+            "application/vnd.iheartmedia.v1.0.0.batch+json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "batch" : {
+                    "type" : "array",
+                    "items" : {
+                      "$ref" : "#/components/schemas/BatchOperation"
+                    }
+                  }
+                }
+              },
+              "examples" : {
+                "Spot" : {
+                  "$ref" : "#/components/examples/SpotBatchRequest"
+                },
+                "Talent" : {
+                  "$ref" : "#/components/examples/TalentBatchRequest"
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Batch operations Completed.",
+            "content" : {
+              "application/vnd.iheartmedia.v1.0.0.batch+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BatchResponses"
+                },
+                "examples" : {
+                  "Spot" : {
+                    "$ref" : "#/components/examples/SpotBatchResponse"
+                  },
+                  "Talent" : {
+                    "$ref" : "#/components/examples/TalentBatchResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "$ref" : "#/components/responses/BadRequest"
+          },
+          "422" : {
+            "$ref" : "#/components/responses/UnprocessableEntity"
+          },
+          "500" : {
+            "$ref" : "#/components/responses/GeneralServerError"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "responses" : {
+      "BadRequest" : {
+        "description" : "Bad Request",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/BadRequestHttpStatus"
+            },
+            "examples" : {
+              "InvalidJson" : {
+                "value" : {
+                  "httpStatusCode" : 400,
+                  "message" : "Invalid JSON"
+                }
+              },
+              "BadRequest" : {
+                "value" : {
+                  "httpStatusCode" : 400,
+                  "message" : "Bad Request"
+                }
+              }
+            }
+          }
+        }
+      },
+      "GeneralServerError" : {
+        "description" : "General server error",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/GeneralServerErrorHttpStatus"
+            }
+          }
+        }
+      },
+      "UnprocessableEntity" : {
+        "description" : "Unprocessable Entity",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/UnprocessableEntityHttpStatus"
+            },
+            "examples" : {
+              "ValidationFailed" : {
+                "value" : {
+                  "httpStatusCode" : 422,
+                  "message" : "Validation Failed",
+                  "errors" : [ {
+                    "type" : "spots",
+                    "parameter" : "data",
+                    "field" : "isci",
+                    "code" : "invalid"
+                  }, {
+                    "type" : "spots",
+                    "parameter" : "data",
+                    "field" : "advertiserName",
+                    "code" : "missing"
+                  } ]
+                }
+              },
+              "UnprocessableEntity" : {
+                "value" : {
+                  "httpStatusCode" : 422,
+                  "message" : "Unprocessable Entity",
+                  "errors" : [ {
+                    "type" : null,
+                    "parameter" : "path",
+                    "field" : null,
+                    "code" : "missing"
+                  }, {
+                    "type" : null,
+                    "parameter" : "body",
+                    "field" : null,
+                    "code" : "invalid"
+                  } ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "NotFound" : {
+        "description" : "Not Found",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/NotFoundHttpStatus"
+            }
+          }
+        }
+      }
+    },
+    "examples" : {
+      "PostBulkRequest" : {
+        "value" : {
+          "operations" : [ {
+            "method" : "POST",
+            "headers" : [ {
+              "name" : "Accept",
+              "value" : "application/vnd.iheartmedia.v1.0.0+json"
+            } ],
+            "path" : "/production-orders/0/spots",
+            "body" : {
+              "data" : {
+                "isci" : "WALGR00234",
+                "title" : "Walgreens Claritin Spot",
+                "dueDate" : "2020-01-31",
+                "length" : 15,
+                "advertiserName" : "Walgreens"
+              }
+            }
+          } ]
+        }
+      },
+      "PutBulkRequest" : {
+        "value" : {
+          "operations" : [ {
+            "method" : "PUT",
+            "headers" : [ {
+              "name" : "Accept",
+              "value" : "application/vnd.iheartmedia.v1.0.0+json"
+            } ],
+            "path" : "/production-orders/0/spots/0",
+            "body" : {
+              "data" : {
+                "isci" : "WALGR00234",
+                "title" : "Walgreens Claritin Spot",
+                "dueDate" : "2020-01-31",
+                "startDate" : null,
+                "endDate" : null,
+                "length" : 15,
+                "advertiserName" : "Walgreens",
+                "cartId" : 132323,
+                "isSold" : true,
+                "isScheduled" : true,
+                "isScriptApprovalRequired" : false,
+                "isApprovalRequired" : false,
+                "status" : null,
+                "script" : null,
+                "rotationPercent" : null,
+                "talentNotes" : null,
+                "productionTag" : null,
+                "fileLinkInfo" : null,
+                "preferVoice" : [ "Female" ],
+                "specificVoiceName" : null,
+                "emailTo" : [ "email@email.com" ]
+              }
+            }
+          } ]
+        }
+      },
+      "GetBulkRequest" : {
+        "value" : {
+          "operations" : [ {
+            "method" : "GET",
+            "headers" : [ {
+              "name" : "Accept",
+              "value" : "application/vnd.iheartmedia.v1.0.0+json"
+            } ],
+            "path" : "/production-orders/0/spots/0"
+          } ]
+        }
+      },
+      "BatchBulkRequest" : {
+        "value" : {
+          "operations" : [ {
+            "method" : "BATCH",
+            "headers" : [ {
+              "name" : "Accept",
+              "value" : "application/vnd.iheartmedia.v1.0.0+json"
+            } ],
+            "batch" : [ {
+              "uuid" : "799ea002-9fac-4b13-94bc-ee6844687ebb",
+              "resource" : "/production-orders",
+              "type" : "production-orders",
+              "data" : { },
+              "relationships" : { }
+            }, {
+              "uuid" : "7eee5713-d486-4c07-971a-bdc959d2c7ce",
+              "resource" : "/markets/393",
+              "type" : "markets",
+              "data" : { },
+              "relationships" : { }
+            }, {
+              "uuid" : "a86d2d8a-11f2-4ec7-8b93-6cc3ac9c62da",
+              "resource" : "/production-orders/799ea002-9fac-4b13-94bc-ee6844687ebb/spots",
+              "type" : "spots",
+              "data" : {
+                "isci" : "WALGR00234",
+                "title" : "Walgreens Claritin Spot",
+                "dueDate" : "2020-01-31",
+                "length" : 15,
+                "advertiserName" : "Walgreens"
+              },
+              "relationships" : {
+                "market" : "7eee5713-d486-4c07-971a-bdc959d2c7ce"
+              }
+            } ]
+          } ]
+        }
+      },
+      "PostBulkResponse" : {
+        "value" : [ {
+          "status" : {
+            "httpStatusCode" : 201,
+            "message" : "Created"
+          },
+          "headers" : [ {
+            "name" : "Location",
+            "value" : "/production-orders/0/spots/0"
+          } ],
+          "request" : {
+            "method" : "POST",
+            "headers" : [ {
+              "name" : "Accept",
+              "value" : "application/vnd.iheartmedia.v1.0.0+json"
+            } ],
+            "path" : "/production-orders/0/spots",
+            "body" : {
+              "data" : {
+                "isci" : "WALGR00234",
+                "title" : "Walgreens Claritin Spot",
+                "dueDate" : "2020-01-31",
+                "length" : 15,
+                "advertiserName" : "Walgreens"
+              }
+            }
+          },
+          "body" : {
+            "id" : 0,
+            "uuid" : "7eee5713-d486-4c07-971a-bdc959d2c7ce",
+            "resource" : "/production-orders/0/spots/0",
+            "href" : "/production-orders/0/spots/0",
+            "type" : "spots",
+            "options" : {
+              "dataEnabled" : true,
+              "relationshipsEnabled" : true
+            },
+            "owner" : {
+              "id" : 0,
+              "uuid" : "a86d2d8a-11f2-4ec7-8b93-6cc3ac9c62da",
+              "resource" : "/production-orders/0",
+              "href" : "/production-orders/0",
+              "type" : "production-orders",
+              "options" : {
+                "dataEnabled" : true,
+                "relationshipsEnabled" : false
+              },
+              "owner" : { },
+              "data" : { },
+              "relationships" : { }
+            },
+            "data" : {
+              "isci" : "WALGR00234",
+              "title" : "Walgreens Claritin Spot",
+              "dueDate" : "2020-01-31",
+              "startDate" : null,
+              "endDate" : null,
+              "length" : 15,
+              "advertiserName" : "Walgreens",
+              "cartId" : null,
+              "isSold" : false,
+              "isScheduled" : false,
+              "isScriptApprovalRequired" : false,
+              "isApprovalRequired" : false,
+              "status" : null,
+              "script" : null,
+              "rotationPercent" : null,
+              "talentNotes" : null,
+              "productionTag" : null,
+              "fileLinkInfo" : null,
+              "preferVoice" : null,
+              "specificVoiceName" : null,
+              "emailTo" : [ ]
+            },
+            "relationships" : {
+              "market" : { },
+              "adType" : { },
+              "workType" : { },
+              "mediaService" : { },
+              "approvals" : [ ],
+              "files" : [ ],
+              "handlers" : [ ],
+              "talent" : [ ],
+              "stations" : [ ],
+              "createdBy" : { }
+            }
+          }
+        } ]
+      },
+      "PutBulkResponse" : {
+        "value" : [ {
+          "status" : {
+            "httpStatusCode" : 204,
+            "message" : "No Content"
+          },
+          "headers" : [ ],
+          "request" : {
+            "method" : "PUT",
+            "headers" : [ {
+              "name" : "Accept",
+              "value" : "application/vnd.iheartmedia.v1.0.0+json"
+            } ],
+            "path" : "/production-orders/0/spots/0",
+            "body" : {
+              "data" : {
+                "isci" : "WALGR00234",
+                "title" : "Walgreens Claritin Spot",
+                "dueDate" : "2020-01-31",
+                "startDate" : null,
+                "endDate" : null,
+                "length" : 15,
+                "advertiserName" : "Walgreens",
+                "cartId" : 132323,
+                "isSold" : true,
+                "isScheduled" : true,
+                "isScriptApprovalRequired" : false,
+                "isApprovalRequired" : false,
+                "status" : null,
+                "script" : null,
+                "rotationPercent" : null,
+                "talentNotes" : null,
+                "productionTag" : null,
+                "fileLinkInfo" : null,
+                "preferVoice" : [ "Female" ],
+                "specificVoiceName" : null,
+                "emailTo" : [ "email@email.com" ]
+              }
+            }
+          },
+          "body" : { }
+        } ]
+      },
+      "GetBulkResponse" : {
+        "value" : [ {
+          "status" : {
+            "httpStatusCode" : 200,
+            "message" : "Success"
+          },
+          "headers" : [ ],
+          "request" : {
+            "method" : "GET",
+            "headers" : [ {
+              "name" : "Accept",
+              "value" : "application/vnd.iheartmedia.v1.0.0+json"
+            } ],
+            "path" : "/production-orders/0/spots/0"
+          },
+          "body" : {
+            "id" : 0,
+            "uuid" : "7eee5713-d486-4c07-971a-bdc959d2c7ce",
+            "resource" : "/production-orders/0/spots/0",
+            "href" : "/production-orders/0/spots/0",
+            "type" : "spots",
+            "options" : {
+              "dataEnabled" : true,
+              "relationshipsEnabled" : true
+            },
+            "owner" : {
+              "id" : 0,
+              "uuid" : "a86d2d8a-11f2-4ec7-8b93-6cc3ac9c62da",
+              "resource" : "/production-orders/0",
+              "href" : "/production-orders/0",
+              "type" : "production-orders",
+              "options" : {
+                "dataEnabled" : true,
+                "relationshipsEnabled" : false
+              },
+              "owner" : { },
+              "data" : { },
+              "relationships" : { }
+            },
+            "data" : {
+              "isci" : "WALGR00234",
+              "title" : "Walgreens Claritin Spot",
+              "dueDate" : "2020-01-31",
+              "startDate" : null,
+              "endDate" : null,
+              "length" : 15,
+              "advertiserName" : "Walgreens",
+              "cartId" : null,
+              "isSold" : false,
+              "isScheduled" : false,
+              "isScriptApprovalRequired" : false,
+              "isApprovalRequired" : false,
+              "status" : null,
+              "script" : null,
+              "rotationPercent" : null,
+              "talentNotes" : null,
+              "productionTag" : null,
+              "fileLinkInfo" : null,
+              "preferVoice" : null,
+              "specificVoiceName" : null,
+              "emailTo" : [ ]
+            },
+            "relationships" : {
+              "market" : { },
+              "adType" : { },
+              "workType" : { },
+              "mediaService" : { },
+              "approvals" : [ ],
+              "files" : [ ],
+              "handlers" : [ ],
+              "talent" : [ ],
+              "stations" : [ ],
+              "createdBy" : { }
+            }
+          }
+        } ]
+      },
+      "BatchBulkResponse" : {
+        "value" : [ {
+          "status" : {
+            "httpStatusCode" : 200,
+            "message" : "Success"
+          },
+          "headers" : [ ],
+          "request" : { },
+          "body" : {
+            "batch" : [ {
+              "status" : {
+                "httpStatusCode" : 201,
+                "message" : "Created"
+              },
+              "headers" : [ {
+                "name" : "Location",
+                "value" : "/production-orders/0"
+              } ],
+              "request" : {
+                "method" : "POST",
+                "headers" : [ {
+                  "name" : "Accept",
+                  "value" : "application/vnd.iheartmedia.v1.0.0+json"
+                } ],
+                "path" : "/production-orders",
+                "body" : {
+                  "data" : { }
+                }
+              },
+              "body" : {
+                "id" : 0,
+                "uuid" : "df1ff6f9-9afc-4cfc-adbc-cff9a6ace1d7",
+                "resource" : "/production-orders/0",
+                "href" : "/production-orders/0",
+                "type" : "production-orders",
+                "options" : {
+                  "dataEnabled" : true,
+                  "relationshipsEnabled" : true
+                },
+                "owner" : { },
+                "data" : { },
+                "relationships" : {
+                  "spots" : [ ]
+                }
+              }
+            }, {
+              "status" : {
+                "httpStatusCode" : 201,
+                "message" : "Created"
+              },
+              "headers" : [ {
+                "name" : "Location",
+                "value" : "/production-orders/0/spots/0"
+              } ],
+              "request" : {
+                "method" : "POST",
+                "headers" : [ {
+                  "name" : "Accept",
+                  "value" : "application/vnd.iheartmedia.v1.0.0+json"
+                } ],
+                "path" : "/production-orders/799ea002-9fac-4b13-94bc-ee6844687ebb/spots",
+                "body" : {
+                  "data" : {
+                    "isci" : "WALGR00234",
+                    "title" : "Walgreens Claritin Spot",
+                    "dueDate" : "2020-01-31",
+                    "length" : 15,
+                    "advertiserName" : "Walgreens"
+                  }
+                }
+              },
+              "body" : {
+                "id" : 0,
+                "uuid" : "7eee5713-d486-4c07-971a-bdc959d2c7ce",
+                "resource" : "/production-orders/0/spots/0",
+                "href" : "/production-orders/0/spots/0",
+                "type" : "spots",
+                "options" : {
+                  "dataEnabled" : true,
+                  "relationshipsEnabled" : true
+                },
+                "owner" : {
+                  "id" : 0,
+                  "uuid" : "a86d2d8a-11f2-4ec7-8b93-6cc3ac9c62da",
+                  "resource" : "/production-orders/0",
+                  "href" : "/production-orders/0",
+                  "type" : "production-orders",
+                  "options" : {
+                    "dataEnabled" : true,
+                    "relationshipsEnabled" : false
+                  },
+                  "owner" : { },
+                  "data" : { },
+                  "relationships" : { }
+                },
+                "data" : {
+                  "isci" : "WALGR00234",
+                  "title" : "Walgreens Claritin Spot",
+                  "dueDate" : "2020-01-31",
+                  "startDate" : null,
+                  "endDate" : null,
+                  "length" : 15,
+                  "advertiserName" : "Walgreens",
+                  "cartId" : null,
+                  "isSold" : false,
+                  "isScheduled" : false,
+                  "isScriptApprovalRequired" : false,
+                  "isApprovalRequired" : false,
+                  "status" : null,
+                  "script" : null,
+                  "rotationPercent" : null,
+                  "talentNotes" : null,
+                  "productionTag" : null,
+                  "fileLinkInfo" : null,
+                  "preferVoice" : null,
+                  "specificVoiceName" : null,
+                  "emailTo" : [ ]
+                },
+                "relationships" : {
+                  "market" : { },
+                  "adType" : { },
+                  "workType" : { },
+                  "mediaService" : { },
+                  "approvals" : [ ],
+                  "files" : [ ],
+                  "handlers" : [ ],
+                  "talent" : [ ],
+                  "stations" : [ ],
+                  "createdBy" : { }
+                }
+              }
+            }, {
+              "status" : {
+                "httpStatusCode" : 201,
+                "message" : "Created"
+              },
+              "headers" : [ {
+                "name" : "Content-Location",
+                "value" : "/production-orders/0/spots/0/markets/393"
+              } ],
+              "request" : {
+                "method" : "PUT",
+                "headers" : [ {
+                  "name" : "Accept",
+                  "value" : "application/vnd.iheartmedia.v1.0.0+json"
+                } ],
+                "path" : "/production-orders/0/spots/0/markets/393",
+                "body" : {
+                  "data" : { }
+                }
+              },
+              "body" : { }
+            } ]
+          }
+        } ]
+      },
+      "SpotBatchRequest" : {
+        "value" : {
+          "batch" : [ {
+            "uuid" : "799ea002-9fac-4b13-94bc-ee6844687ebb",
+            "resource" : "/production-orders",
+            "type" : "production-orders",
+            "data" : { },
+            "relationships" : { }
+          }, {
+            "uuid" : "7eee5713-d486-4c07-971a-bdc959d2c7ce",
+            "resource" : "/markets/393",
+            "type" : "markets",
+            "data" : { },
+            "relationships" : { }
+          }, {
+            "uuid" : "a86d2d8a-11f2-4ec7-8b93-6cc3ac9c62da",
+            "resource" : "/production-orders/799ea002-9fac-4b13-94bc-ee6844687ebb/spots",
+            "type" : "spots",
+            "data" : {
+              "isci" : "WALGR00234",
+              "title" : "Walgreens Claritin Spot",
+              "dueDate" : "2020-01-31",
+              "length" : 15,
+              "advertiserName" : "Walgreens"
+            },
+            "relationships" : {
+              "market" : "7eee5713-d486-4c07-971a-bdc959d2c7ce"
+            }
+          } ]
+        }
+      },
+      "SpotBatchResponse" : {
+        "value" : {
+          "batch" : [ {
+            "status" : {
+              "httpStatusCode" : 201,
+              "message" : "Created"
+            },
+            "headers" : [ {
+              "name" : "Location",
+              "value" : "/production-orders/0"
+            } ],
+            "request" : {
+              "method" : "POST",
+              "headers" : [ {
+                "name" : "Accept",
+                "value" : "application/vnd.iheartmedia.v1.0.0+json"
+              } ],
+              "path" : "/production-orders",
+              "body" : {
+                "data" : { }
+              }
+            },
+            "body" : {
+              "id" : 0,
+              "uuid" : "df1ff6f9-9afc-4cfc-adbc-cff9a6ace1d7",
+              "resource" : "/production-orders/0",
+              "href" : "/production-orders/0",
+              "type" : "production-orders",
+              "options" : {
+                "dataEnabled" : true,
+                "relationshipsEnabled" : true
+              },
+              "owner" : { },
+              "data" : { },
+              "relationships" : {
+                "spots" : [ ]
+              }
+            }
+          }, {
+            "status" : {
+              "httpStatusCode" : 201,
+              "message" : "Created"
+            },
+            "headers" : [ {
+              "name" : "Location",
+              "value" : "/production-orders/0/spots/0"
+            } ],
+            "request" : {
+              "method" : "POST",
+              "headers" : [ {
+                "name" : "Accept",
+                "value" : "application/vnd.iheartmedia.v1.0.0+json"
+              } ],
+              "path" : "/production-orders/799ea002-9fac-4b13-94bc-ee6844687ebb/spots",
+              "body" : {
+                "data" : {
+                  "isci" : "WALGR00234",
+                  "title" : "Walgreens Claritin Spot",
+                  "dueDate" : "2020-01-31",
+                  "length" : 15,
+                  "advertiserName" : "Walgreens"
+                }
+              }
+            },
+            "body" : {
+              "id" : 0,
+              "uuid" : "7eee5713-d486-4c07-971a-bdc959d2c7ce",
+              "resource" : "/production-orders/0/spots/0",
+              "href" : "/production-orders/0/spots/0",
+              "type" : "spots",
+              "options" : {
+                "dataEnabled" : true,
+                "relationshipsEnabled" : true
+              },
+              "owner" : {
+                "id" : 0,
+                "uuid" : "a86d2d8a-11f2-4ec7-8b93-6cc3ac9c62da",
+                "resource" : "/production-orders/0",
+                "href" : "/production-orders/0",
+                "type" : "production-orders",
+                "options" : {
+                  "dataEnabled" : true,
+                  "relationshipsEnabled" : false
+                },
+                "owner" : { },
+                "data" : { },
+                "relationships" : { }
+              },
+              "data" : {
+                "isci" : "WALGR00234",
+                "title" : "Walgreens Claritin Spot",
+                "dueDate" : "2020-01-31",
+                "startDate" : null,
+                "endDate" : null,
+                "length" : 15,
+                "advertiserName" : "Walgreens",
+                "cartId" : null,
+                "isSold" : false,
+                "isScheduled" : false,
+                "isScriptApprovalRequired" : false,
+                "isApprovalRequired" : false,
+                "status" : null,
+                "script" : null,
+                "rotationPercent" : null,
+                "talentNotes" : null,
+                "productionTag" : null,
+                "fileLinkInfo" : null,
+                "preferVoice" : null,
+                "specificVoiceName" : null,
+                "emailTo" : [ ]
+              },
+              "relationships" : {
+                "market" : { },
+                "adType" : { },
+                "workType" : { },
+                "mediaService" : { },
+                "approvals" : [ ],
+                "files" : [ ],
+                "handlers" : [ ],
+                "talent" : [ ],
+                "stations" : [ ],
+                "createdBy" : { }
+              }
+            }
+          }, {
+            "status" : {
+              "httpStatusCode" : 201,
+              "message" : "Created"
+            },
+            "headers" : [ {
+              "name" : "Content-Location",
+              "value" : "/production-orders/0/spots/0/markets/393"
+            } ],
+            "request" : {
+              "method" : "PUT",
+              "headers" : [ {
+                "name" : "Accept",
+                "value" : "application/vnd.iheartmedia.v1.0.0+json"
+              } ],
+              "path" : "/production-orders/0/spots/0/markets/393",
+              "body" : {
+                "data" : { }
+              }
+            },
+            "body" : { }
+          } ]
+        }
+      },
+      "TalentBatchRequest" : {
+        "value" : {
+          "batch" : [ {
+            "uuid" : "53e2377c-f630-4715-a3eb-df3606517876",
+            "resource" : "/categories/0",
+            "type" : "categories",
+            "data" : { },
+            "relationships" : { }
+          }, {
+            "uuid" : "7610cf0d-5292-4e6f-9bd5-24805436350b",
+            "resource" : "/users/0",
+            "type" : "talent",
+            "data" : { },
+            "relationships" : {
+              "categories" : [ "53e2377c-f630-4715-a3eb-df3606517876" ]
+            }
+          }, {
+            "uuid" : "e511c55c-4bdb-4663-ac26-ce2c7117fe60",
+            "resource" : "/markets/0",
+            "type" : "talent",
+            "data" : { },
+            "relationships" : {
+              "categories" : [ "53e2377c-f630-4715-a3eb-df3606517876" ]
+            }
+          }, {
+            "uuid" : "09c560f3-6a4b-4560-a0a1-9ebc93b853ed",
+            "resource" : "/production-orders/0/spots/0",
+            "type" : "spots",
+            "data" : { },
+            "relationships" : {
+              "talent" : [ "7610cf0d-5292-4e6f-9bd5-24805436350b", "e511c55c-4bdb-4663-ac26-ce2c7117fe60" ]
+            }
+          } ]
+        }
+      },
+      "TalentBatchResponse" : {
+        "value" : {
+          "batch" : [ {
+            "status" : {
+              "httpStatusCode" : 201,
+              "message" : "Created"
+            },
+            "headers" : [ {
+              "name" : "Content-Location",
+              "value" : "/production-orders/0/spots/0/talent/users/0"
+            } ],
+            "request" : {
+              "method" : "PUT",
+              "headers" : [ {
+                "name" : "Accept",
+                "value" : "application/vnd.iheartmedia.v1.0.0+json"
+              } ],
+              "path" : "/production-orders/0/spots/0/talent/users/0",
+              "data" : {
+                "data" : { }
+              }
+            },
+            "body" : { }
+          }, {
+            "status" : {
+              "httpStatusCode" : 201,
+              "message" : "Created"
+            },
+            "headers" : [ {
+              "name" : "Content-Location",
+              "value" : "/production-orders/0/spots/0/talent/users/0/categories/0"
+            } ],
+            "request" : {
+              "method" : "PUT",
+              "headers" : [ {
+                "name" : "Accept",
+                "value" : "application/vnd.iheartmedia.v1.0.0+json"
+              } ],
+              "path" : "/production-orders/0/spots/0/talent/users/0/categories/0",
+              "data" : {
+                "data" : { }
+              }
+            },
+            "body" : { }
+          }, {
+            "status" : {
+              "httpStatusCode" : 201,
+              "message" : "Created"
+            },
+            "headers" : [ {
+              "name" : "Content-Location",
+              "value" : "/production-orders/0/spots/0/talent/markets/0"
+            } ],
+            "request" : {
+              "method" : "PUT",
+              "headers" : [ {
+                "name" : "Accept",
+                "value" : "application/vnd.iheartmedia.v1.0.0+json"
+              } ],
+              "path" : "/production-orders/0/spots/0/talent/markets/0",
+              "data" : {
+                "data" : { }
+              }
+            },
+            "body" : { }
+          }, {
+            "status" : {
+              "httpStatusCode" : 201,
+              "message" : "Created"
+            },
+            "headers" : [ {
+              "name" : "Content-Location",
+              "value" : "/production-orders/0/spots/0/talent/markets/0/categories/0"
+            } ],
+            "request" : {
+              "method" : "PUT",
+              "headers" : [ {
+                "name" : "Accept",
+                "value" : "application/vnd.iheartmedia.v1.0.0+json"
+              } ],
+              "path" : "/production-orders/0/spots/0/talent/markets/0/categories/0",
+              "data" : {
+                "data" : { }
+              }
+            },
+            "body" : { }
+          } ]
+        }
+      }
+    },
+    "schemas" : {
+      "Object" : {
+        "type" : "object",
+        "required" : [ "id", "uuid", "resource", "href", "type", "options", "owner", "data", "relationships" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "resource" : {
+            "type" : "string"
+          },
+          "href" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "options" : {
+            "$ref" : "#/components/schemas/Option"
+          },
+          "owner" : {
+            "type" : "object"
+          },
+          "data" : {
+            "type" : "object"
+          },
+          "relationships" : {
+            "type" : "object"
+          }
+        }
+      },
+      "ProductionOrder" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/production-orders/{productionOrderId}"
+            },
+            "href" : {
+              "example" : "/production-orders/{productionOrderId}"
+            },
+            "type" : {
+              "example" : "production-orders"
+            },
+            "relationships" : {
+              "$ref" : "#/components/schemas/ProductionOrderRelationships"
+            }
+          }
+        } ]
+      },
+      "Spot" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/production-orders/{productionOrderId}/spots/{spotId}"
+            },
+            "href" : {
+              "example" : "/production-orders/{productionOrderId}/spots/{spotId}"
+            },
+            "type" : {
+              "example" : "spots"
+            },
+            "owner" : {
+              "$ref" : "#/components/schemas/ProductionOrder"
+            },
+            "data" : {
+              "$ref" : "#/components/schemas/SpotData"
+            },
+            "relationships" : {
+              "$ref" : "#/components/schemas/SpotRelationships"
+            }
+          }
+        } ]
+      },
+      "MediaService" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/media-services/{mediaServiceId}"
+            },
+            "href" : {
+              "enum" : [ "/media-services/{mediaServiceId}", "/production-orders/{productionOrderId}/spots/{spotId}/media-services/{mediaServiceId}" ]
+            },
+            "type" : {
+              "example" : "media-services"
+            },
+            "data" : {
+              "$ref" : "#/components/schemas/MediaServiceData"
+            }
+          }
+        } ]
+      },
+      "AdType" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/ad-types/{adTypeId}"
+            },
+            "href" : {
+              "enum" : [ "/ad-types/{adTypeId}", "/production-orders/{productionOrderId}/spots/{spotId}/ad-types/{adTypeId}" ]
+            },
+            "type" : {
+              "example" : "ad-types"
+            },
+            "data" : {
+              "$ref" : "#/components/schemas/AdTypeData"
+            }
+          }
+        } ]
+      },
+      "WorkType" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/work-types/{workTypeId}"
+            },
+            "href" : {
+              "enum" : [ "/work-types/{workTypeId}", "/production-orders/{productionOrderId}/spots/{spotId}/work-types/{workTypeId}" ]
+            },
+            "type" : {
+              "example" : "work-types"
+            },
+            "data" : {
+              "$ref" : "#/components/schemas/WorkTypeData"
+            }
+          }
+        } ]
+      },
+      "Market" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/markets/{marketId}"
+            },
+            "href" : {
+              "enum" : [ "/markets/{marketId}", "/production-orders/{productionOrderId}/spots/{spotId}/markets/{marketId}" ]
+            },
+            "type" : {
+              "example" : "markets"
+            },
+            "data" : {
+              "$ref" : "#/components/schemas/MarketData"
+            }
+          }
+        } ]
+      },
+      "Approval" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/production-orders/{productionOrderId}/spots/{spotId}/approvals/{approvalId}"
+            },
+            "href" : {
+              "example" : "/production-orders/{productionOrderId}/spots/{spotId}/approvals/{approvalId}"
+            },
+            "type" : {
+              "example" : "approvals"
+            },
+            "owner" : {
+              "$ref" : "#/components/schemas/Spot"
+            },
+            "data" : {
+              "$ref" : "#/components/schemas/ApprovalData"
+            }
+          }
+        } ]
+      },
+      "File" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/production-orders/{productionOrderId}/spots/{spotId}/files/{fileId}"
+            },
+            "href" : {
+              "example" : "/production-orders/{productionOrderId}/spots/{spotId}/files/{fileId}"
+            },
+            "type" : {
+              "example" : "files"
+            },
+            "owner" : {
+              "anyOf" : [ {
+                "type" : "object"
+              }, {
+                "$ref" : "#/components/schemas/Spot"
+              } ]
+            },
+            "data" : {
+              "$ref" : "#/components/schemas/FileData"
+            }
+          }
+        } ]
+      },
+      "Handler" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/users/{userId}"
+            },
+            "href" : {
+              "example" : "/production-orders/{productionOrderId}/spots/{spotId}/handlers/{userId}"
+            },
+            "type" : {
+              "example" : "handlers"
+            },
+            "owner" : {
+              "$ref" : "#/components/schemas/Spot"
+            },
+            "relationships" : {
+              "$ref" : "#/components/schemas/HandlerRelationships"
+            }
+          }
+        } ]
+      },
+      "Talent" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "enum" : [ "/users/{userId}", "/markets/{marketId}" ]
+            },
+            "href" : {
+              "enum" : [ "/production-orders/{productionOrderId}/spots/{spotId}/talent/users/{userId}", "/production-orders/{productionOrderId}/spots/{spotId}/talent/markets/{marketId}" ]
+            },
+            "type" : {
+              "example" : "talent"
+            },
+            "owner" : {
+              "$ref" : "#/components/schemas/Spot"
+            },
+            "relationships" : {
+              "$ref" : "#/components/schemas/TalentRelationships"
+            }
+          }
+        } ]
+      },
+      "Station" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/stations/{stationId}"
+            },
+            "href" : {
+              "enum" : [ "/stations/{stationId}", "/production-orders/{productionOrderId}/spots/{spotId}/stations/{stationId}" ]
+            },
+            "type" : {
+              "example" : "stations"
+            },
+            "data" : {
+              "$ref" : "#/components/schemas/StationData"
+            }
+          }
+        } ]
+      },
+      "User" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/users/{userId}"
+            },
+            "href" : {
+              "example" : "/users/{userId}"
+            },
+            "type" : {
+              "example" : "users"
+            },
+            "data" : {
+              "$ref" : "#/components/schemas/UserData"
+            }
+          }
+        } ]
+      },
+      "Category" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/categories/{categoryId}"
+            },
+            "href" : {
+              "enum" : [ "/categories/{categoryId}", "/production-orders/spots/{spotId}/talent/users/{userId}/categories/{categoryId}", "/production-orders/spots/{spotId}/talent/markets/{marketId}/categories/{categoryId}" ]
+            },
+            "type" : {
+              "example" : "categories"
+            },
+            "data" : {
+              "$ref" : "#/components/schemas/CategoryData"
+            }
+          }
+        } ]
+      },
+      "Role" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Object"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "resource" : {
+              "example" : "/roles/{roleId}"
+            },
+            "href" : {
+              "enum" : [ "/roles/{roleId}", "/production-orders/{productionOrderId}/spots/{spotId}/handlers/{userId}/roles/{roleId}" ]
+            },
+            "type" : {
+              "example" : "roles"
+            },
+            "data" : {
+              "$ref" : "#/components/schemas/RoleData"
+            }
+          }
+        } ]
+      },
+      "Data" : {
+        "oneOf" : [ {
+          "type" : "object"
+        }, {
+          "$ref" : "#/components/schemas/SpotData"
+        }, {
+          "$ref" : "#/components/schemas/RoleData"
+        }, {
+          "$ref" : "#/components/schemas/CategoryData"
+        }, {
+          "$ref" : "#/components/schemas/FileData"
+        }, {
+          "$ref" : "#/components/schemas/StationData"
+        }, {
+          "$ref" : "#/components/schemas/MediaServiceData"
+        }, {
+          "$ref" : "#/components/schemas/MarketData"
+        }, {
+          "$ref" : "#/components/schemas/WorkTypeData"
+        }, {
+          "$ref" : "#/components/schemas/UserData"
+        }, {
+          "$ref" : "#/components/schemas/AdTypeData"
+        }, {
+          "$ref" : "#/components/schemas/ApprovalData"
+        } ]
+      },
+      "SpotData" : {
+        "type" : "object",
+        "required" : [ "isci", "title", "dueDate", "length", "advertiserName" ],
+        "properties" : {
+          "isci" : {
+            "type" : "string",
+            "maxLength" : 30
+          },
+          "title" : {
+            "type" : "string",
+            "maxLength" : 99
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "length" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maxLength" : 3
+          },
+          "advertiserName" : {
+            "type" : "string",
+            "maxLength" : 100
+          },
+          "cartId" : {
+            "type" : "string"
+          },
+          "isSold" : {
+            "type" : "boolean",
+            "description" : "soldflag\n"
+          },
+          "isScheduled" : {
+            "type" : "boolean"
+          },
+          "isScriptApprovalRequired" : {
+            "type" : "boolean"
+          },
+          "isApprovalRequired" : {
+            "type" : "boolean"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "script" : {
+            "type" : "string",
+            "maxLength" : 16777215
+          },
+          "rotationPercent" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maxLength" : 3
+          },
+          "talentNotes" : {
+            "type" : "string",
+            "maxLength" : 2000
+          },
+          "productionNotes" : {
+            "type" : "string",
+            "maxLength" : 2000
+          },
+          "productionTag" : {
+            "type" : "string",
+            "maxLength" : 1000
+          },
+          "fileLinkInfo" : {
+            "type" : "string",
+            "maxLength" : 500
+          },
+          "preferVoice" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "Female", "Male", "Specific" ]
+            }
+          },
+          "specificVoiceName" : {
+            "type" : "string",
+            "maxLength" : 50,
+            "description" : "Only required if preferVoice:Specific is specified.\n"
+          },
+          "emailTo" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "email"
+            }
+          }
+        }
+      },
+      "RoleData" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CategoryData" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "example" : "urban"
+          }
+        }
+      },
+      "FileData" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "comment" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          }
+        }
+      },
+      "StationData" : {
+        "type" : "object",
+        "properties" : {
+          "callLetters" : {
+            "type" : "string"
+          },
+          "officialCallLetters" : {
+            "type" : "string"
+          }
+        }
+      },
+      "MediaServiceData" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "deliveryLocation" : {
+            "type" : "string"
+          }
+        }
+      },
+      "MarketData" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "vieroId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "orderNumberId" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "WorkTypeData" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
+      "UserData" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "example" : "Santa Claus"
+          }
+        }
+      },
+      "AdTypeData" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ApprovalData" : {
+        "type" : "object",
+        "required" : [ "type", "isApproved" ],
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "example" : "spot"
+          },
+          "isApproved" : {
+            "type" : "boolean",
+            "example" : false
+          }
+        }
+      },
+      "Relationships" : {
+        "oneOf" : [ {
+          "type" : "object"
+        }, {
+          "$ref" : "#/components/schemas/ProductionOrderRelationships"
+        }, {
+          "$ref" : "#/components/schemas/SpotRelationships"
+        }, {
+          "$ref" : "#/components/schemas/TalentRelationships"
+        }, {
+          "$ref" : "#/components/schemas/HandlerRelationships"
+        } ]
+      },
+      "ProductionOrderRelationships" : {
+        "type" : "object",
+        "properties" : {
+          "spots" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Spot"
+            }
+          }
+        }
+      },
+      "SpotRelationships" : {
+        "type" : "object",
+        "properties" : {
+          "market" : {
+            "$ref" : "#/components/schemas/Market"
+          },
+          "adType" : {
+            "$ref" : "#/components/schemas/AdType"
+          },
+          "workType" : {
+            "$ref" : "#/components/schemas/WorkType"
+          },
+          "mediaService" : {
+            "$ref" : "#/components/schemas/MediaService"
+          },
+          "approvals" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Approval"
+            }
+          },
+          "files" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/File"
+            }
+          },
+          "handlers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Handler"
+            }
+          },
+          "talent" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Talent"
+            }
+          },
+          "stations" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Station"
+            }
+          },
+          "createdBy" : {
+            "$ref" : "#/components/schemas/User"
+          }
+        }
+      },
+      "TalentRelationships" : {
+        "type" : "object",
+        "properties" : {
+          "categories" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Category"
+            }
+          }
+        }
+      },
+      "HandlerRelationships" : {
+        "type" : "object",
+        "properties" : {
+          "roles" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Role"
+            }
+          }
+        }
+      },
+      "RelationshipUUIDs" : {
+        "oneOf" : [ {
+          "type" : "object"
+        }, {
+          "$ref" : "#/components/schemas/ProductionOrderRelationshipUUIDs"
+        }, {
+          "$ref" : "#/components/schemas/SpotRelationshipUUIDs"
+        }, {
+          "$ref" : "#/components/schemas/TalentRelationshipUUIDs"
+        }, {
+          "$ref" : "#/components/schemas/HandlerRelationshipUUIDs"
+        } ]
+      },
+      "ProductionOrderRelationshipUUIDs" : {
+        "type" : "object",
+        "properties" : {
+          "spots" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          }
+        }
+      },
+      "SpotRelationshipUUIDs" : {
+        "type" : "object",
+        "properties" : {
+          "market" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "adType" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "workType" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "mediaService" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "approvals" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          },
+          "files" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          },
+          "handlers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          },
+          "talent" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          },
+          "stations" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          }
+        }
+      },
+      "TalentRelationshipUUIDs" : {
+        "type" : "object",
+        "properties" : {
+          "categories" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          }
+        }
+      },
+      "HandlerRelationshipUUIDs" : {
+        "type" : "object",
+        "properties" : {
+          "roles" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          }
+        }
+      },
+      "Types" : {
+        "type" : "string",
+        "enum" : [ "production-orders", "media-services", "ad-types", "work-types", "spots", "markets", "approvals", "files", "handlers", "talent", "stations", "users", "categories", "roles" ]
+      },
+      "Option" : {
+        "type" : "object",
+        "required" : [ "dataEnabled", "relationshipsEnabled" ],
+        "properties" : {
+          "dataEnabled" : {
+            "type" : "boolean"
+          },
+          "relationshipsEnabled" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Parameters" : {
+        "type" : "string",
+        "enum" : [ "type", "path", "body", "data", "uuid", "batch", "method", "headers", "resource", "operations", "relationships" ]
+      },
+      "Codes" : {
+        "type" : "string",
+        "enum" : [ "missing", "invalid" ]
+      },
+      "DataType" : {
+        "type" : "string",
+        "enum" : [ "uuid", "array", "object", "string", "integer" ]
+      },
+      "Error" : {
+        "type" : "object",
+        "required" : [ "type", "parameter", "field", "code" ],
+        "properties" : {
+          "type" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/Types"
+            } ],
+            "nullable" : true
+          },
+          "parameter" : {
+            "$ref" : "#/components/schemas/Parameters"
+          },
+          "field" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "code" : {
+            "$ref" : "#/components/schemas/Codes"
+          }
+        }
+      },
+      "HttpHeader" : {
+        "type" : "object",
+        "required" : [ "name", "value" ],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          }
+        }
+      },
+      "HttpRequestHeaders" : {
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/GetRequestHttpHeaders"
+        }, {
+          "$ref" : "#/components/schemas/PostRequestHttpHeaders"
+        }, {
+          "$ref" : "#/components/schemas/PutRequestHttpHeaders"
+        }, {
+          "$ref" : "#/components/schemas/BatchRequestHttpHeaders"
+        } ]
+      },
+      "HttpResponseHeaders" : {
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/GetResponseHttpHeaders"
+        }, {
+          "$ref" : "#/components/schemas/PostResponseHttpHeaders"
+        }, {
+          "$ref" : "#/components/schemas/PutResponseHttpHeaders"
+        }, {
+          "$ref" : "#/components/schemas/BatchResponseHttpHeaders"
+        } ]
+      },
+      "AcceptHttpHeader" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpHeader"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "name" : {
+              "example" : "Accept"
+            },
+            "value" : {
+              "enum" : [ "application/vnd.iheartmedia.v1.0.0+json", "application/vnd.iheartmedia.v1.0.0.bulk+json", "application/vnd.iheartmedia.v1.0.0.batch+json" ]
+            }
+          }
+        } ]
+      },
+      "LocationHttpHeader" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpHeader"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "name" : {
+              "example" : "Location"
+            },
+            "value" : {
+              "type" : "string",
+              "example" : "/production-orders/{productionOrderId}"
+            }
+          }
+        } ]
+      },
+      "RangeHttpHeader" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpHeader"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "name" : {
+              "example" : "Range"
+            },
+            "value" : {
+              "enum" : [ "spots=0-0" ]
+            }
+          }
+        } ]
+      },
+      "AcceptRangesHttpHeader" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpHeader"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "name" : {
+              "example" : "Accept-Ranges"
+            },
+            "value" : {
+              "enum" : [ "spots" ]
+            }
+          }
+        } ]
+      },
+      "ContentRangeHttpHeader" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpHeader"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "name" : {
+              "example" : "Content-Range"
+            },
+            "value" : {
+              "enum" : [ "spots=0-0/0" ]
+            }
+          }
+        } ]
+      },
+      "ContentLocationHttpHeader" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpHeader"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "name" : {
+              "example" : "Content-Location"
+            },
+            "value" : {
+              "allOf" : [ {
+                "$ref" : "#/components/schemas/PossiblePutPaths"
+              }, {
+                "$ref" : "#/components/schemas/PossiblePostPaths"
+              } ]
+            }
+          }
+        } ]
+      },
+      "GetRequestHttpHeaders" : {
+        "type" : "array",
+        "items" : {
+          "anyOf" : [ {
+            "$ref" : "#/components/schemas/AcceptHttpHeader"
+          }, {
+            "$ref" : "#/components/schemas/RangeHttpHeader"
+          } ]
+        }
+      },
+      "PostRequestHttpHeaders" : {
+        "type" : "array",
+        "items" : {
+          "anyOf" : [ {
+            "$ref" : "#/components/schemas/AcceptHttpHeader"
+          } ]
+        }
+      },
+      "PutRequestHttpHeaders" : {
+        "type" : "array",
+        "items" : {
+          "anyOf" : [ {
+            "$ref" : "#/components/schemas/AcceptHttpHeader"
+          } ]
+        }
+      },
+      "BatchRequestHttpHeaders" : {
+        "type" : "array",
+        "items" : {
+          "anyOf" : [ {
+            "$ref" : "#/components/schemas/AcceptHttpHeader"
+          } ]
+        }
+      },
+      "GetResponseHttpHeaders" : {
+        "type" : "array",
+        "items" : {
+          "anyOf" : [ {
+            "$ref" : "#/components/schemas/AcceptHttpHeader"
+          }, {
+            "$ref" : "#/components/schemas/AcceptRangesHttpHeader"
+          }, {
+            "$ref" : "#/components/schemas/ContentRangeHttpHeader"
+          } ]
+        }
+      },
+      "PostResponseHttpHeaders" : {
+        "type" : "array",
+        "items" : {
+          "anyOf" : [ {
+            "$ref" : "#/components/schemas/LocationHttpHeader"
+          } ]
+        }
+      },
+      "PutResponseHttpHeaders" : {
+        "type" : "array",
+        "items" : {
+          "anyOf" : [ {
+            "$ref" : "#/components/schemas/ContentLocationHttpHeader"
+          } ]
+        }
+      },
+      "BatchResponseHttpHeaders" : {
+        "type" : "array",
+        "items" : {
+          "type" : "object"
+        }
+      },
+      "HttpStatus" : {
+        "type" : "object",
+        "required" : [ "httpStatusCode", "message" ],
+        "properties" : {
+          "httpStatusCode" : {
+            "type" : "integer"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        }
+      },
+      "HttpError" : {
+        "type" : "object",
+        "required" : [ "errors" ],
+        "properties" : {
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "HttpStatuses" : {
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/GetHttpStatuses"
+        }, {
+          "$ref" : "#/components/schemas/PostHttpStatuses"
+        }, {
+          "$ref" : "#/components/schemas/PutHttpStatuses"
+        }, {
+          "$ref" : "#/components/schemas/BatchHttpStatuses"
+        } ]
+      },
+      "CreatedHttpStatus" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpStatus"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "httpStatusCode" : {
+              "example" : 201
+            },
+            "message" : {
+              "example" : "Created"
+            }
+          }
+        } ]
+      },
+      "SuccessHttpStatus" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpStatus"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "httpStatusCode" : {
+              "example" : 200
+            },
+            "message" : {
+              "example" : "Ok"
+            }
+          }
+        } ]
+      },
+      "PartialHttpStatus" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpStatus"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "httpStatusCode" : {
+              "example" : 206
+            },
+            "message" : {
+              "example" : "Partial Content"
+            }
+          }
+        } ]
+      },
+      "NoContentHttpStatus" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpStatus"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "httpStatusCode" : {
+              "example" : 204
+            },
+            "message" : {
+              "example" : "No Content"
+            }
+          }
+        } ]
+      },
+      "NotFoundHttpStatus" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpStatus"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "httpStatusCode" : {
+              "example" : 404
+            },
+            "message" : {
+              "example" : "Not Found"
+            }
+          }
+        } ]
+      },
+      "BadRequestHttpStatus" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpStatus"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "httpStatusCode" : {
+              "example" : 400
+            },
+            "message" : {
+              "enum" : [ "Bad Request", "Invalid JSON" ]
+            }
+          }
+        } ]
+      },
+      "ForbiddenHttpStatus" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpStatus"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "httpStatusCode" : {
+              "example" : 403
+            },
+            "message" : {
+              "example" : "Forbidden"
+            }
+          }
+        } ]
+      },
+      "ConflictHttpStatus" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpStatus"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "httpStatusCode" : {
+              "example" : 409
+            },
+            "message" : {
+              "example" : "Conflict"
+            }
+          }
+        } ]
+      },
+      "GeneralServerErrorHttpStatus" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpStatus"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "httpStatusCode" : {
+              "example" : 500
+            },
+            "message" : {
+              "example" : "General Server Error"
+            }
+          }
+        } ]
+      },
+      "NotImplementedHttpStatus" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpStatus"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "httpStatusCode" : {
+              "example" : 501
+            },
+            "message" : {
+              "example" : "Not Implemented"
+            }
+          }
+        } ]
+      },
+      "UnprocessableEntityHttpStatus" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/HttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/HttpError"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "httpStatusCode" : {
+              "example" : 422
+            },
+            "message" : {
+              "type" : "string",
+              "enum" : [ "Unprocessable Entity", "Validation Failed" ]
+            }
+          }
+        } ]
+      },
+      "GetHttpStatuses" : {
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/SuccessHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/PartialHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/NotFoundHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/GeneralServerErrorHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/UnprocessableEntityHttpStatus"
+        } ]
+      },
+      "PutHttpStatuses" : {
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/CreatedHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/NotFoundHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/ForbiddenHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/NoContentHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/BadRequestHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/NotImplementedHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/GeneralServerErrorHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/UnprocessableEntityHttpStatus"
+        } ]
+      },
+      "PostHttpStatuses" : {
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/CreatedHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/NotFoundHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/ForbiddenHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/BadRequestHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/NotImplementedHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/GeneralServerErrorHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/UnprocessableEntityHttpStatus"
+        } ]
+      },
+      "BatchHttpStatuses" : {
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/CreatedHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/SuccessHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/NotFoundHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/ConflictHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/NoContentHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/ForbiddenHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/BadRequestHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/NotImplementedHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/GeneralServerErrorHttpStatus"
+        }, {
+          "$ref" : "#/components/schemas/UnprocessableEntityHttpStatus"
+        } ]
+      },
+      "RequestMethods" : {
+        "type" : "string",
+        "enum" : [ "GET", "POST", "PUT", "BATCH", "DELETE", "QUERY" ]
+      },
+      "BulkOperations" : {
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/PostBulkOperation"
+        }, {
+          "$ref" : "#/components/schemas/PutBulkOperation"
+        }, {
+          "$ref" : "#/components/schemas/GetBulkOperation"
+        }, {
+          "$ref" : "#/components/schemas/BatchBulkOperation"
+        } ]
+      },
+      "BulkRequestBody" : {
+        "type" : "object",
+        "properties" : {
+          "operations" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BulkOperations"
+            }
+          }
+        }
+      },
+      "BulkOperation" : {
+        "type" : "object",
+        "properties" : {
+          "method" : {
+            "type" : "string"
+          },
+          "headers" : {
+            "type" : "object"
+          }
+        }
+      },
+      "PostBulkOperation" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/BulkOperation"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "headers" : {
+              "$ref" : "#/components/schemas/PostRequestHttpHeaders"
+            },
+            "method" : {
+              "example" : "POST"
+            },
+            "path" : {
+              "$ref" : "#/components/schemas/PossiblePostPaths"
+            },
+            "body" : {
+              "type" : "object",
+              "properties" : {
+                "data" : {
+                  "$ref" : "#/components/schemas/Data"
+                }
+              }
+            }
+          }
+        } ]
+      },
+      "PutBulkOperation" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/BulkOperation"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "headers" : {
+              "$ref" : "#/components/schemas/PutRequestHttpHeaders"
+            },
+            "method" : {
+              "example" : "PUT"
+            },
+            "path" : {
+              "$ref" : "#/components/schemas/PossiblePutPaths"
+            },
+            "body" : {
+              "type" : "object",
+              "properties" : {
+                "data" : {
+                  "$ref" : "#/components/schemas/Data"
+                }
+              }
+            }
+          }
+        } ]
+      },
+      "GetBulkOperation" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/BulkOperation"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "headers" : {
+              "$ref" : "#/components/schemas/GetRequestHttpHeaders"
+            },
+            "method" : {
+              "example" : "GET"
+            },
+            "path" : {
+              "$ref" : "#/components/schemas/PossibleGetPaths"
+            }
+          }
+        } ]
+      },
+      "BatchBulkOperation" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/BulkOperation"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "headers" : {
+              "$ref" : "#/components/schemas/BatchRequestHttpHeaders"
+            },
+            "method" : {
+              "example" : "BATCH"
+            },
+            "batch" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/components/schemas/BatchOperation"
+              }
+            }
+          }
+        } ]
+      },
+      "BatchOperation" : {
+        "type" : "object",
+        "required" : [ "uuid", "resource", "type", "data", "relationships" ],
+        "properties" : {
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "resource" : {
+            "$ref" : "#/components/schemas/PossibleGetPaths"
+          },
+          "type" : {
+            "$ref" : "#/components/schemas/Types"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/Data"
+          },
+          "relationships" : {
+            "$ref" : "#/components/schemas/RelationshipUUIDs"
+          }
+        }
+      },
+      "BulkResponse" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "$ref" : "#/components/schemas/HttpStatuses"
+          },
+          "headers" : {
+            "oneOf" : [ {
+              "type" : "object"
+            }, {
+              "$ref" : "#/components/schemas/HttpResponseHeaders"
+            } ]
+          },
+          "request" : {
+            "$ref" : "#/components/schemas/BulkOperations"
+          },
+          "body" : {
+            "oneOf" : [ {
+              "type" : "object"
+            }, {
+              "$ref" : "#/components/schemas/Object"
+            }, {
+              "$ref" : "#/components/schemas/BatchResponses"
+            } ]
+          }
+        }
+      },
+      "BatchResponse" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "$ref" : "#/components/schemas/BatchHttpStatuses"
+          },
+          "method" : {
+            "type" : "string",
+            "enum" : [ "POST", "PUT" ]
+          },
+          "path" : {
+            "type" : "string"
+          },
+          "headers" : {
+            "oneOf" : [ {
+              "type" : "object"
+            }, {
+              "$ref" : "#/components/schemas/BatchResponseHttpHeaders"
+            } ]
+          },
+          "body" : {
+            "oneOf" : [ {
+              "type" : "object"
+            }, {
+              "$ref" : "#/components/schemas/Object"
+            } ]
+          }
+        }
+      },
+      "BatchResponses" : {
+        "type" : "object",
+        "properties" : {
+          "batch" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BatchResponse"
+            }
+          }
+        }
+      },
+      "PossibleGetPaths" : {
+        "type" : "string",
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/UserCollectionPaths"
+        }, {
+          "$ref" : "#/components/schemas/UserInstancePaths"
+        }, {
+          "$ref" : "#/components/schemas/MarketCollectionPaths"
+        }, {
+          "$ref" : "#/components/schemas/MarketInstancePaths"
+        }, {
+          "$ref" : "#/components/schemas/CategoryCollectionPaths"
+        }, {
+          "$ref" : "#/components/schemas/CategoryInstancePaths"
+        }, {
+          "$ref" : "#/components/schemas/AdTypeCollectionPaths"
+        }, {
+          "$ref" : "#/components/schemas/AdTypeInstancePaths"
+        }, {
+          "$ref" : "#/components/schemas/RoleCollectionPaths"
+        }, {
+          "$ref" : "#/components/schemas/RoleInstancePaths"
+        }, {
+          "$ref" : "#/components/schemas/StationCollectionPaths"
+        }, {
+          "$ref" : "#/components/schemas/StationInstancePaths"
+        }, {
+          "$ref" : "#/components/schemas/WorkTypeCollectionPaths"
+        }, {
+          "$ref" : "#/components/schemas/WorkTypeInstancePaths"
+        }, {
+          "$ref" : "#/components/schemas/MediaServiceCollectionPaths"
+        }, {
+          "$ref" : "#/components/schemas/MediaServiceInstancePaths"
+        }, {
+          "$ref" : "#/components/schemas/ProductionOrderCollectionPaths"
+        }, {
+          "$ref" : "#/components/schemas/ProductionOrderInstancePaths"
+        } ]
+      },
+      "PossiblePostPaths" : {
+        "type" : "string",
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/ProductionOrderPostPaths"
+        } ]
+      },
+      "PossiblePutPaths" : {
+        "type" : "string",
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/ProductionOrderPutPaths"
+        } ]
+      },
+      "ProductionOrderCollectionPaths" : {
+        "type" : "string",
+        "enum" : [ "/production-orders", "/production-orders/{productionOrderId}/spots", "/production-orders/{productionOrderId}/spots/{spotId}/files", "/production-orders/{productionOrderId}/spots/{spotId}/markets", "/production-orders/{productionOrderId}/spots/{spotId}/handlers", "/production-orders/{productionOrderId}/spots/{spotId}/approvals", "/production-orders/{productionOrderId}/spots/{spotId}/ad-types", "/production-orders/{productionOrderId}/spots/{spotId}/work-types", "/production-orders/{productionOrderId}/spots/{spotId}/media-services", "/production-orders/{productionOrderId}/spots/{spotId}/handlers/{userId}/roles", "/production-orders/{productionOrderId}/spots/{spotId}/talent", "/production-orders/{productionOrderId}/spots/{spotId}/talent/users", "/production-orders/{productionOrderId}/spots/{spotId}/talent/users/{userId}/categories", "/production-orders/{productionOrderId}/spots/{spotId}/talent/markets", "/production-orders/{productionOrderId}/spots/{spotId}/talent/markets/{marketId}/categories", "/production-orders/{productionOrderId}/spots/{spotId}/talent/stations" ],
+        "default" : "/production-orders"
+      },
+      "ProductionOrderInstancePaths" : {
+        "type" : "string",
+        "enum" : [ "/production-orders/{productionOrderId}", "/production-orders/{productionOrderId}/spots/{spotId}", "/production-orders/{productionOrderId}/spots/{spotId}/ad-types/{adTypeId}", "/production-orders/{productionOrderId}/spots/{spotId}/work-types/{workTypeId}", "/production-orders/{productionOrderId}/spots/{spotId}/media-services/{mediaServiceId}", "/production-orders/{productionOrderId}/spots/{spotId}/files/{fileId}", "/production-orders/{productionOrderId}/spots/{spotId}/markets/{marketId}", "/production-orders/{productionOrderId}/spots/{spotId}/approvals/{approvalId}", "/production-orders/{productionOrderId}/spots/{spotId}/handlers/{userId}", "/production-orders/{productionOrderId}/spots/{spotId}/handlers/{userId}/roles/{roleId}", "/production-orders/{productionOrderId}/spots/{spotId}/talent/users/{userId}", "/production-orders/{productionOrderId}/spots/{spotId}/talent/users/{userId}/categories/{categoryId}", "/production-orders/{productionOrderId}/spots/{spotId}/talent/markets/{marketId}", "/production-orders/{productionOrderId}/spots/{spotId}/talent/markets/{marketId}/categories/{categoryId}", "/production-orders/{productionOrderId}/spots/{spotId}/talent/stations/{stationsId}" ],
+        "default" : "/production-orders/{productionOrderId}"
+      },
+      "ProductionOrderPostPaths" : {
+        "type" : "string",
+        "enum" : [ "/production-orders", "/production-orders/{productionOrderId}/spots", "/production-orders/{productionOrderId}/spots/{spotId}/approvals" ]
+      },
+      "ProductionOrderPutPaths" : {
+        "type" : "string",
+        "enum" : [ "/production-orders/{productionOrderId}", "/production-orders/{productionOrderId}/spots/{spotId}", "/production-orders/{productionOrderId}/spots/{spotId}/ad-types/{adTypeId}", "/production-orders/{productionOrderId}/spots/{spotId}/work-types/{workTypeId}", "/production-orders/{productionOrderId}/spots/{spotId}/media-services/{mediaServiceId}", "/production-orders/{productionOrderId}/spots/{spotId}/markets/{marketId}", "/production-orders/{productionOrderId}/spots/{spotId}/stations/{stationId}", "/production-orders/{productionOrderId}/spots/{spotId}/approvals/{approvalId}", "/production-orders/{productionOrderId}/spots/{spotId}/files/{fileId}", "/production-orders/{productionOrderId}/spots/{spotId}/handlers/{userId}", "/production-orders/{productionOrderId}/spots/{spotId}/handlers/{userId}/roles/{roleId}", "/production-orders/{productionOrderId}/spots/{spotId}/talent/users/{userId}", "/production-orders/{productionOrderId}/spots/{spotId}/talent/users/{userId}/categories/{categoryId}", "/production-orders/{productionOrderId}/spots/{spotId}/talent/markets/{marketId}", "/production-orders/{productionOrderId}/spots/{spotId}/talent/markets/{marketId}/categories/{categoryId}" ]
+      },
+      "UserCollectionPaths" : {
+        "type" : "string",
+        "enum" : [ "/users" ],
+        "default" : "/users"
+      },
+      "UserInstancePaths" : {
+        "type" : "string",
+        "enum" : [ "/users/{userId}" ],
+        "default" : "/users/{userId}"
+      },
+      "MarketCollectionPaths" : {
+        "type" : "string",
+        "enum" : [ "/markets" ],
+        "default" : "/markets"
+      },
+      "MarketInstancePaths" : {
+        "type" : "string",
+        "enum" : [ "/markets/{marketId}" ],
+        "default" : "/markets/{marketId}"
+      },
+      "CategoryCollectionPaths" : {
+        "type" : "string",
+        "enum" : [ "/categories" ],
+        "default" : "/categories"
+      },
+      "CategoryInstancePaths" : {
+        "type" : "string",
+        "enum" : [ "/categories/{categoryId}" ],
+        "default" : "/categories/{categoryId}"
+      },
+      "AdTypeCollectionPaths" : {
+        "type" : "string",
+        "enum" : [ "/ad-types" ],
+        "default" : "/ad-types"
+      },
+      "AdTypeInstancePaths" : {
+        "type" : "string",
+        "enum" : [ "/ad-types/{adTypeId}" ],
+        "default" : "/ad-types/{adTypeId}"
+      },
+      "StationCollectionPaths" : {
+        "type" : "string",
+        "enum" : [ "/stations" ],
+        "default" : "/stations"
+      },
+      "StationInstancePaths" : {
+        "type" : "string",
+        "enum" : [ "/stations/{stationId}" ],
+        "default" : "/stations/{stationId}"
+      },
+      "WorkTypeCollectionPaths" : {
+        "type" : "string",
+        "enum" : [ "/work-types" ],
+        "default" : "/work-types"
+      },
+      "WorkTypeInstancePaths" : {
+        "type" : "string",
+        "enum" : [ "/work-types/{workTypeId}" ],
+        "default" : "/work-types/{workTypeId}"
+      },
+      "MediaServiceCollectionPaths" : {
+        "type" : "string",
+        "enum" : [ "/media-services" ],
+        "default" : "/media-services"
+      },
+      "MediaServiceInstancePaths" : {
+        "type" : "string",
+        "enum" : [ "/media-services/{mediaServiceId}" ],
+        "default" : "/media-services/{mediaServiceId}"
+      },
+      "RoleCollectionPaths" : {
+        "type" : "string",
+        "enum" : [ "/roles" ],
+        "default" : "/roles"
+      },
+      "RoleInstancePaths" : {
+        "type" : "string",
+        "enum" : [ "/roles/{roleId}" ],
+        "default" : "/roles/{roleId}"
+      }
+    }
+  }
+}
